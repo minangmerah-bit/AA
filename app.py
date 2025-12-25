@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# 2. UI STYLE (MATTE BLACK, LEFT LABELS, FIXED OUTPUT)
+# 2. UI STYLE (MATTE BLACK, VERIFIED OUTPUT)
 # =====================================================
 st.markdown("""
 <style>
@@ -18,31 +18,22 @@ st.markdown("""
 #MainMenu, footer, header {visibility: hidden;}
 [data-testid="stToolbar"] {visibility: hidden !important;}
 
-/* CORE THEME: PITCH BLACK */
-.stApp {
-    background-color: #000000 !important;
-}
+/* CORE THEME */
+.stApp { background-color: #000000 !important; }
 
-/* CONTAINER LAYOUT */
+/* CONTAINER */
 .block-container {
     max-width: 680px;
     padding-top: 2rem;
     padding-bottom: 3rem;
 }
 
-/* GLOBAL FONT */
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-    color: white;
-}
+/* TYPOGRAPHY */
+body { font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif; color: white; }
 
-/* --- INPUT FIELD ENGINEERING --- */
-/* 1. HILANGKAN TOMBOL +/- (Stepper) SECARA VISUAL */
-div[data-testid="stNumberInputStepDown"], div[data-testid="stNumberInputStepUp"] {
-    display: none !important;
-}
+/* --- INPUT ENGINEERING --- */
+div[data-testid="stNumberInputStepDown"], div[data-testid="stNumberInputStepUp"] { display: none !important; }
 
-/* 2. STYLING KOTAK INPUT */
 div[data-baseweb="input"] {
     background-color: #111 !important;
     border: 1px solid #333 !important;
@@ -51,7 +42,6 @@ div[data-baseweb="input"] {
     padding: 8px 0;
 }
 
-/* 3. TEKS DI DALAM INPUT (ANGKA) */
 input {
     color: white !important;
     font-weight: 700 !important;
@@ -59,7 +49,6 @@ input {
     font-size: 18px !important;
 }
 
-/* 4. LABEL KUSTOM (RATA KIRI) */
 .input-label {
     font-size: 11px;
     color: #888;
@@ -67,25 +56,19 @@ input {
     margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    text-align: left; /* FIX: Rata Kiri */
+    text-align: left; /* RATA KIRI */
     padding-left: 2px;
 }
 
-/* HEADER STYLE */
-.title {
-    font-size: 24px;
-    font-weight: 700;
-    color: white;
-    letter-spacing: -0.5px;
-}
+/* HEADER */
+.title { font-size: 24px; font-weight: 700; color: white; letter-spacing: -0.5px; }
 .subtitle {
-    font-size: 12px;
-    color: #666;
+    font-size: 12px; color: #666;
     font-family: "SF Mono", "Roboto Mono", monospace;
     margin-top: 4px;
 }
 
-/* SECTION HEADERS */
+/* SECTION */
 .section {
     margin-top: 2.5rem;
     font-size: 10px;
@@ -96,7 +79,7 @@ input {
     margin-bottom: 15px;
 }
 
-/* --- EXECUTION CARDS (KEMBALI KE VERSI "ZENITH" YANG TERBAIK) --- */
+/* --- CARDS (VERIFICATION READY) --- */
 .exec {
     background-color: #0a0a0a;
     border: 1px solid #222;
@@ -104,26 +87,25 @@ input {
     padding: 14px 16px;
     margin-bottom: 8px;
     display: flex;
-    justify-content: space-between; /* Layout Kiri-Kanan Rapi */
+    justify-content: space-between;
     align-items: center;
 }
 
-/* WARNA BORDER KIRI (Visual Indicator) */
-.buy { border-left: 4px solid #2ecc71; } /* Hijau Terang */
-.sell { border-left: 4px solid #e74c3c; } /* Merah Terang */
+.buy { border-left: 4px solid #2ecc71; }
+.sell { border-left: 4px solid #e74c3c; }
 
-/* TYPOGRAPHY KARTU HASIL */
 .asset-name { font-weight: 700; font-size: 16px; color: white; }
-.asset-sub { font-size: 11px; color: #777; margin-top: 2px; }
+/* Subtitle sekarang memuat Harga untuk verifikasi */
+.asset-sub { font-size: 11px; color: #888; margin-top: 4px; font-family: monospace; } 
 
 .val-box { text-align: right; }
-.val-main { font-weight: 700; font-size: 16px; color: white; }
+.val-main { font-weight: 700; font-size: 17px; color: white; }
 .val-sub { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; margin-top: 2px;}
 
 .tag-buy { color: #2ecc71; }
 .tag-sell { color: #e74c3c; }
 
-/* BUTTON STYLE */
+/* BUTTON */
 .stButton > button {
     width: 100%;
     background: white;
@@ -136,54 +118,40 @@ input {
     margin-top: 25px;
     transition: all 0.2s;
 }
-.stButton > button:hover {
-    background: #cccccc;
-    transform: scale(0.99);
-}
+.stButton > button:hover { background: #cccccc; transform: scale(0.99); }
 </style>
 """, unsafe_allow_html=True)
 
 # =====================================================
-# 3. FX LOGIC (PETER PROTOCOL - LOCKED & AUDITED)
+# 3. FX LOGIC (LOCKED & AUDITED)
 # =====================================================
 @st.cache_data(ttl=3600)
 def get_usd_idr():
-    try:
-        return yf.Ticker("IDR=X").history(period="1d")['Close'].iloc[-1]
-    except:
-        return 16000.0
-
+    try: return yf.Ticker("IDR=X").history(period="1d")['Close'].iloc[-1]
+    except: return 16000.0
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# 4. HEADER (rizqynandaputra)
+# 4. HEADER
 # =====================================================
 l, r = st.columns([3,1])
 with l:
     st.markdown("<div class='title'>EXECUTOR X1</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>rizqynandaputra</div>", unsafe_allow_html=True)
 with r:
-    st.markdown(
-        f"<div style='text-align:right;font-size:11px;color:#555;padding-top:10px;font-family:monospace'>IDR {kurs_rupiah:,.0f}</div>",
-        unsafe_allow_html=True
-    )
+    st.markdown(f"<div style='text-align:right;font-size:11px;color:#555;padding-top:10px;font-family:monospace'>IDR {kurs_rupiah:,.0f}</div>", unsafe_allow_html=True)
 
 # =====================================================
-# 5. INPUT SECTION (FIXED: STEP 1.0)
+# 5. INPUT
 # =====================================================
 st.markdown("<div class='section'>CAPITAL CONFIGURATION</div>", unsafe_allow_html=True)
-
 c1, c2, c3 = st.columns(3)
-
 with c1:
     st.markdown("<div class='input-label'>TARGET ($)</div>", unsafe_allow_html=True)
-    # FIX: step=1.0 agar tombol +/- (jika ditekan via keyboard) nambahnya 1, bukan 0.01
     budget = st.number_input("Target", 300.0, step=1.0, label_visibility="collapsed")
-
 with c2:
     st.markdown("<div class='input-label'>USED ($)</div>", unsafe_allow_html=True)
     used = st.number_input("Used", 0.0, step=1.0, label_visibility="collapsed")
-
 with c3:
     st.markdown("<div class='input-label'>EXTRA ($)</div>", unsafe_allow_html=True)
     extra = st.number_input("Extra", 0.0, step=1.0, label_visibility="collapsed")
@@ -192,29 +160,19 @@ total_dana_usd = (budget - used) + extra
 
 st.markdown("<div class='section'>INVENTORY STATUS (ON = EMPTY)</div>", unsafe_allow_html=True)
 i1, i2, i3 = st.columns(3)
-no_pltr = i1.toggle("PLTR", False)
-no_qqq  = i1.toggle("QQQ", False)
-no_btc  = i2.toggle("BTC", False)
-no_gld  = i2.toggle("GLD", False)
+no_pltr = i1.toggle("PLTR", False); no_qqq = i1.toggle("QQQ", False)
+no_btc = i2.toggle("BTC", False); no_gld = i2.toggle("GLD", False)
 no_mstr = i3.toggle("MSTR", False)
-
-inv_data = {
-    'PLTR': not no_pltr, 'BTC': not no_btc, 'MSTR': not no_mstr,
-    'QQQ': not no_qqq, 'GLD': not no_gld
-}
+inv_data = {'PLTR': not no_pltr, 'BTC': not no_btc, 'MSTR': not no_mstr, 'QQQ': not no_qqq, 'GLD': not no_gld}
 
 # =====================================================
-# 6. ENGINE CORE (LOCKED)
+# 6. ENGINE CORE
 # =====================================================
 def get_signal(series, symbol):
     price = series.iloc[-1]
     sma200 = series.rolling(200).mean().iloc[-1]
+    cur_dd = (series - series.rolling(200, min_periods=1).max()).iloc[-1] / series.rolling(200, min_periods=1).max().iloc[-1]
     
-    # Drawdown Calculation
-    rolling_max = series.rolling(200, min_periods=1).max()
-    cur_dd = (series - rolling_max).iloc[-1] / rolling_max.iloc[-1]
-    
-    # RSI Calculation
     delta = series.diff()
     gain = (delta.where(delta > 0, 0)).rolling(14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
@@ -223,15 +181,9 @@ def get_signal(series, symbol):
     cur_rsi = rsi.iloc[-1]
 
     action, reason = "WAIT", "Stable"
-
-    # STRATEGY RULES
-    if cur_rsi > 80 or (price - sma200)/sma200 > 0.6:
-        action, reason = "SELL", f"Overheat RSI {cur_rsi:.0f}"
-    elif price > sma200:
-        action, reason = "BUY", "Uptrend"
-    elif (symbol=='PLTR' and cur_dd < -0.30) or (symbol in ['BTC','MSTR'] and cur_dd < -0.20):
-        action, reason = "BUY", f"Dip {cur_dd*100:.0f}%"
-
+    if cur_rsi > 80 or (price - sma200)/sma200 > 0.6: action, reason = "SELL", f"Overheat RSI {cur_rsi:.0f}"
+    elif price > sma200: action, reason = "BUY", "Uptrend"
+    elif (symbol=='PLTR' and cur_dd < -0.30) or (symbol in ['BTC','MSTR'] and cur_dd < -0.20): action, reason = "BUY", f"Dip {cur_dd*100:.0f}%"
     return price, reason, action
 
 # =====================================================
@@ -239,31 +191,21 @@ def get_signal(series, symbol):
 # =====================================================
 st.write("")
 if st.button("RUN DIAGNOSTIC", use_container_width=True):
-
-    tickers = {
-        'PLTR':'PLTR', 'BTC-USD':'BTC', 'MSTR':'MSTR',
-        'QQQ':'QQQ', 'GLD':'GLD'
-    }
-
+    tickers = {'PLTR':'PLTR', 'BTC-USD':'BTC', 'MSTR':'MSTR', 'QQQ':'QQQ', 'GLD':'GLD'}
     sell, buy = [], []
-
-    with st.spinner("Processing Market Data..."):
+    with st.spinner("Verifying Market Data..."):
         for sym, key in tickers.items():
             try:
                 df = yf.download(sym, period="300d", interval="1d", progress=False)
                 if df.empty: continue
-
                 px = df['Close'] if isinstance(df.columns,str) else df.xs('Close',axis=1,level=0).iloc[:,0]
                 price, reason, action = get_signal(px, key)
                 item = {'sym': key, 'price': price, 'reason': reason}
-                
-                if action=="SELL" and inv_data.get(key,True):
-                    sell.append(item)
-                elif action=="BUY":
-                    buy.append(item)
+                if action=="SELL" and inv_data.get(key,True): sell.append(item)
+                elif action=="BUY": buy.append(item)
             except: pass
 
-    # --- RENDER OUTPUT: SELL ---
+    # --- OUTPUT SELL: HARGA PASAR DITAMPILKAN JELAS (KANAN) ---
     if sell:
         st.markdown("<div class='section' style='color:#e74c3c'>LIQUIDATION ORDER</div>", unsafe_allow_html=True)
         for x in sell:
@@ -271,39 +213,33 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
             <div class="exec sell">
                 <div>
                     <div class="asset-name">{x['sym']}</div>
-                    <div class="asset-sub">${x['price']:,.2f} • {x['reason']}</div>
+                    <div class="asset-sub">{x['reason']}</div>
                 </div>
                 <div class="val-box">
-                    <div class="val-main tag-sell">SELL</div>
+                    <div class="val-main">${x['price']:,.2f}</div> <div class="val-sub tag-sell">MARKET PRICE</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
-    # --- RENDER OUTPUT: BUY ---
+    # --- OUTPUT BUY: HARGA PASAR DITAMPILKAN JELAS (KIRI) ---
     if buy:
         st.markdown("<div class='section' style='color:#2ecc71'>ACQUISITION TARGETS</div>", unsafe_allow_html=True)
-
         base_w = {'BTC':0.2,'MSTR':0.2,'PLTR':0.35,'QQQ':0.15,'GLD':0.1}
         active = {x['sym']:base_w.get(x['sym'],0) for x in buy}
         total_w = sum(active.values())
-
         for x in buy:
             sym = x['sym']
             if total_dana_usd > 1 and total_w > 0:
                 usd = total_dana_usd * active[sym]/total_w
-                if sym in ['BTC','GLD']:
-                    val, cur = f"Rp {usd*kurs_rupiah:,.0f}", "IDR"
-                else:
-                    val, cur = f"${usd:,.2f}", "USD"
-            else:
-                val,cur="HOLD","-"
+                if sym in ['BTC','GLD']: val, cur = f"Rp {usd*kurs_rupiah:,.0f}", "IDR"
+                else: val, cur = f"${usd:,.2f}", "USD"
+            else: val,cur="HOLD","-"
 
             st.markdown(f"""
             <div class="exec buy">
                 <div>
                     <div class="asset-name">{sym}</div>
-                    <div class="asset-sub">{x['reason']}</div>
-                </div>
+                    <div class="asset-sub">Price: ${x['price']:,.2f}</div> </div>
                 <div class="val-box">
                     <div class="val-main">{val}</div>
                     <div class="val-sub tag-buy">{cur}</div>
@@ -311,5 +247,4 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
             </div>
             """, unsafe_allow_html=True)
 
-    if not sell and not buy:
-        st.info("System Stable. No Action Required.")
+    if not sell and not buy: st.info("System Stable. No Action Required.")
