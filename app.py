@@ -7,7 +7,7 @@ import yfinance as yf
 st.set_page_config(
     page_title="Executor X1",
     layout="centered",
-    page_icon="♟️" 
+    page_icon="⚫"  # THE VOID
 )
 
 # =====================================================
