@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# 2. UI ARCHITECTURE (MATTE BLACK, FUNCTIONAL TAGS)
+# 2. UI ARCHITECTURE (PREMIUM & LOGICALLY CORRECT)
 # =====================================================
 st.markdown("""
 <style>
@@ -30,9 +30,8 @@ st.markdown("""
 body { font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif; color: white; }
 
 /* --- INPUT ENGINEERING --- */
-div[data-testid="stNumberInputStepDown"], div[data-testid="stNumberInputStepUp"] {
-    display: none !important;
-}
+div[data-testid="stNumberInputStepDown"], div[data-testid="stNumberInputStepUp"] { display: none !important; }
+
 div[data-baseweb="input"] {
     background-color: #111 !important;
     border: 1px solid #333 !important;
@@ -51,7 +50,7 @@ input {
     letter-spacing: 0.8px; text-align: left; padding-left: 2px;
 }
 
-/* --- HEADER & SECTIONS --- */
+/* --- HEADER --- */
 .title { font-size: 24px; font-weight: 700; color: white; letter-spacing: -0.5px; }
 .subtitle {
     font-size: 12px; color: #666;
@@ -63,7 +62,7 @@ input {
     color: #555; text-transform: uppercase; font-weight: 700; margin-bottom: 15px;
 }
 
-/* --- INTELLIGENT CARDS (WITH MICRO LABELS) --- */
+/* --- INTELLIGENT CARDS --- */
 .exec {
     background-color: #0a0a0a;
     border: 1px solid #222;
@@ -75,8 +74,10 @@ input {
     align-items: center;
 }
 
-.buy { border-left: 4px solid #2ecc71; }
-.sell { border-left: 4px solid #e74c3c; }
+/* Border Indicators */
+.buy { border-left: 4px solid #2ecc71; }   /* Hijau */
+.sell { border-left: 4px solid #e74c3c; }  /* Merah */
+.hold { border-left: 4px solid #555555; }  /* Abu-abu (New Logic) */
 
 /* Left Side: Asset Info */
 .asset-name { font-weight: 800; font-size: 17px; color: white; margin-bottom: 2px; }
@@ -86,25 +87,21 @@ input {
 /* Right Side: Action & Value */
 .val-box { text-align: right; }
 
-/* THE PREMIUM MICRO-LABEL (NEW ADDITION) */
+/* PREMIUM MICRO-LABELS */
 .action-tag {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    margin-bottom: 2px;
-    display: block; /* Pastikan di baris sendiri */
+    font-size: 10px; font-weight: 800; letter-spacing: 1.2px;
+    text-transform: uppercase; margin-bottom: 2px; display: block;
 }
-.tag-text-buy { color: #2ecc71; } /* Hijau Premium */
-.tag-text-sell { color: #e74c3c; } /* Merah Premium */
+.tag-text-buy { color: #2ecc71; }
+.tag-text-sell { color: #e74c3c; }
+.tag-text-hold { color: #777; } /* Warna Netral untuk Hold */
 
 .val-main { font-weight: 800; font-size: 16px; color: white; }
 .val-sub { font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px; margin-top: 2px;}
 
 /* --- BUTTON --- */
 .stButton > button {
-    width: 100%;
-    background: white; color: black; font-weight: 800;
+    width: 100%; background: white; color: black; font-weight: 800;
     border-radius: 8px; padding: 14px 0; font-size: 14px;
     border: none; margin-top: 30px;
 }
@@ -113,7 +110,7 @@ input {
 """, unsafe_allow_html=True)
 
 # =====================================================
-# 3. FX LOGIC (PETER PROTOCOL - LOCKED & AUDITED)
+# 3. FX LOGIC (PETER PROTOCOL - LOCKED)
 # =====================================================
 @st.cache_data(ttl=3600)
 def get_usd_idr():
@@ -220,36 +217,59 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
                     <div class="asset-reason">{x['reason']}</div>
                 </div>
                 <div class="val-box">
-                    <div class="action-tag tag-text-sell">SELL NOW</div> <div class="val-main">${x['price']:,.2f}</div>
+                    <div class="action-tag tag-text-sell">SELL NOW</div>
+                    <div class="val-main">${x['price']:,.2f}</div>
                     <div class="val-sub">MARKET PRICE</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
-    # --- RENDER BUY CARDS ---
+    # --- RENDER BUY CARDS (LOGIC CHECK: FUNDING) ---
     if buy:
-        st.markdown("<div class='section' style='color:#2ecc71'>ACQUISITION TARGETS</div>", unsafe_allow_html=True)
+        # LOGIC CHECK: Apakah ada uang?
+        has_funds = total_dana_usd > 1
+        
+        # Tentukan Warna Header Section
+        header_color = "#2ecc71" if has_funds else "#777"
+        header_text = "ACQUISITION TARGETS" if has_funds else "WATCHLIST (NO FUNDS)"
+        
+        st.markdown(f"<div class='section' style='color:{header_color}'>{header_text}</div>", unsafe_allow_html=True)
+        
         base_w = {'BTC':0.2,'MSTR':0.2,'PLTR':0.35,'QQQ':0.15,'GLD':0.1}
         active = {x['sym']:base_w.get(x['sym'],0) for x in buy}
         total_w = sum(active.values())
         
         for x in buy:
             sym = x['sym']
-            if total_dana_usd > 1 and total_w > 0:
+            
+            # --- LOGIC BRANCHING ---
+            if has_funds and total_w > 0:
+                # SCENARIO A: MARKET BUY + ADA UANG -> TAMPILKAN BUY (HIJAU)
                 usd = total_dana_usd * active[sym]/total_w
                 if sym in ['BTC','GLD']: val, cur = f"Rp {usd*kurs_rupiah:,.0f}", "IDR"
                 else: val, cur = f"${usd:,.2f}", "USD"
-            else: val,cur="HOLD","-"
-
+                
+                card_class = "buy"
+                tag_class = "tag-text-buy"
+                tag_label = "BUY"
+            else:
+                # SCENARIO B: MARKET BUY + TIDAK ADA UANG -> TAMPILKAN HOLD (ABU)
+                val, cur = "0.00", "-"
+                card_class = "hold" # Class baru (Abu-abu)
+                tag_class = "tag-text-hold"
+                tag_label = "HOLD" # Sesuai request: Jangan tulisan BUY kalau uang 0
+            
+            # RENDER CARD
             st.markdown(f"""
-            <div class="exec buy">
+            <div class="exec {card_class}">
                 <div>
                     <div class="asset-name">{sym}</div>
                     <div class="market-price">${x['price']:,.2f}</div>
                     <div class="asset-reason">{x['reason']}</div>
                 </div>
                 <div class="val-box">
-                    <div class="action-tag tag-text-buy">BUY</div> <div class="val-main">{val}</div>
+                    <div class="action-tag {tag_class}">{tag_label}</div>
+                    <div class="val-main">{val}</div>
                     <div class="val-sub">{cur}</div>
                 </div>
             </div>
