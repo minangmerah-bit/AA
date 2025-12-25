@@ -57,13 +57,20 @@ input {
     letter-spacing: 0.8px; text-align: left; padding-left: 2px;
 }
 
-/* --- HEADER --- */
+/* --- HEADER STYLING --- */
 .title { font-size: 24px; font-weight: 700; color: white; letter-spacing: -0.5px; }
+
+/* [UPDATED] SUBTITLE: ITALIC, MONOSPACE, & ELEGANT */
 .subtitle {
-    font-size: 12px; color: #666;
-    font-family: "SF Mono", "Roboto Mono", monospace;
-    margin-top: 4px;
+    font-size: 10px; 
+    color: #666; /* Abu-abu redup */
+    font-family: "SF Mono", "Consolas", "Courier New", monospace; /* Font Coding */
+    font-style: italic; /* Miring seperti tanda tangan */
+    letter-spacing: 1px; /* Sedikit renggang */
+    margin-top: 2px;
+    opacity: 0.8;
 }
+
 .section {
     margin-top: 2.5rem; font-size: 10px; letter-spacing: 1.5px;
     color: #555; text-transform: uppercase; font-weight: 700; margin-bottom: 15px;
@@ -126,11 +133,10 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# 4. HEADER UI (CORRECTED IDENTITY)
+# 4. HEADER UI (FINAL LOOK)
 # =====================================================
 l, r = st.columns([3,1])
 with l:
-    # UPDATED: FINAL BRANDING
     st.markdown("<div class='title'>9AM SYSTEM</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>ARCHITECT BY rizqynandaputra</div>", unsafe_allow_html=True)
 with r:
