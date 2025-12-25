@@ -4,10 +4,10 @@ import yfinance as yf
 # =====================================================
 # 1. SYSTEM CONFIGURATION
 # =====================================================
+# NAMA TAB BROWSER DIUBAH DISINI
 st.set_page_config(
-    page_title="SYNTAX KERNEL",  # UPDATED: NAME CHANGED
+    page_title="SYNTAX KERNEL", 
     layout="centered"
-    # UPDATED: NO ICON
 )
 
 # =====================================================
@@ -120,11 +120,12 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# 4. HEADER
+# 4. HEADER UI - JUDUL UTAMA DIUBAH DISINI
 # =====================================================
 l, r = st.columns([3,1])
 with l:
-    st.markdown("<div class='title'>SYNTAX KERNEL</div>", unsafe_allow_html=True) # UPDATED: HEADER CHANGED
+    # UPDATED HEADER TEXT
+    st.markdown("<div class='title'>SYNTAX KERNEL</div>", unsafe_allow_html=True) 
     st.markdown("<div class='subtitle'>rizqynandaputra</div>", unsafe_allow_html=True)
 with r:
     st.markdown(f"<div style='text-align:right;font-size:11px;color:#555;padding-top:10px;font-family:monospace'>IDR {kurs_rupiah:,.0f}</div>", unsafe_allow_html=True)
