@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# 2. UI ARCHITECTURE (MATTE BLACK & PRECISION LAYOUT)
+# 2. UI ARCHITECTURE (MATTE BLACK, FUNCTIONAL TAGS)
 # =====================================================
 st.markdown("""
 <style>
@@ -29,38 +29,26 @@ st.markdown("""
 /* --- TYPOGRAPHY --- */
 body { font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif; color: white; }
 
-/* --- INPUT ENGINEERING (NO BUTTONS, LEFT LABELS) --- */
-/* 1. Hide Stepper Buttons (+/-) */
+/* --- INPUT ENGINEERING --- */
 div[data-testid="stNumberInputStepDown"], div[data-testid="stNumberInputStepUp"] {
     display: none !important;
 }
-
-/* 2. Input Box Styling */
 div[data-baseweb="input"] {
     background-color: #111 !important;
     border: 1px solid #333 !important;
     border-radius: 8px !important;
     padding: 8px 0;
 }
-
-/* 3. Input Text (Center Aligned Number) */
 input {
     color: white !important;
     font-weight: 700 !important;
     text-align: center !important;
     font-size: 18px !important;
 }
-
-/* 4. Input Labels (Left Aligned) */
 .input-label {
-    font-size: 11px;
-    color: #888;
-    font-weight: 600;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    text-align: left;
-    padding-left: 2px;
+    font-size: 11px; color: #888; font-weight: 600;
+    margin-bottom: 6px; text-transform: uppercase;
+    letter-spacing: 0.8px; text-align: left; padding-left: 2px;
 }
 
 /* --- HEADER & SECTIONS --- */
@@ -71,21 +59,16 @@ input {
     margin-top: 4px;
 }
 .section {
-    margin-top: 2.5rem;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    color: #555;
-    text-transform: uppercase;
-    font-weight: 700;
-    margin-bottom: 15px;
+    margin-top: 2.5rem; font-size: 10px; letter-spacing: 1.5px;
+    color: #555; text-transform: uppercase; font-weight: 700; margin-bottom: 15px;
 }
 
-/* --- INTELLIGENT CARDS (THE FIX) --- */
+/* --- INTELLIGENT CARDS (WITH MICRO LABELS) --- */
 .exec {
     background-color: #0a0a0a;
     border: 1px solid #222;
     border-radius: 10px;
-    padding: 16px; /* Padding lebih lega */
+    padding: 16px;
     margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
@@ -95,29 +78,35 @@ input {
 .buy { border-left: 4px solid #2ecc71; }
 .sell { border-left: 4px solid #e74c3c; }
 
-/* Card Typography */
+/* Left Side: Asset Info */
 .asset-name { font-weight: 800; font-size: 17px; color: white; margin-bottom: 2px; }
-.market-price { font-size: 13px; color: #eee; font-weight: 600; font-family: monospace; } /* Harga Pasar Jelas */
+.market-price { font-size: 13px; color: #eee; font-weight: 600; font-family: monospace; }
 .asset-reason { font-size: 10px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
 
+/* Right Side: Action & Value */
 .val-box { text-align: right; }
-.val-main { font-weight: 800; font-size: 16px; color: white; }
-.val-sub { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; margin-top: 2px;}
 
-.tag-buy { color: #2ecc71; }
-.tag-sell { color: #e74c3c; }
+/* THE PREMIUM MICRO-LABEL (NEW ADDITION) */
+.action-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    display: block; /* Pastikan di baris sendiri */
+}
+.tag-text-buy { color: #2ecc71; } /* Hijau Premium */
+.tag-text-sell { color: #e74c3c; } /* Merah Premium */
+
+.val-main { font-weight: 800; font-size: 16px; color: white; }
+.val-sub { font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px; margin-top: 2px;}
 
 /* --- BUTTON --- */
 .stButton > button {
     width: 100%;
-    background: white;
-    color: black;
-    font-weight: 800;
-    border-radius: 8px;
-    padding: 14px 0;
-    font-size: 14px;
-    border: none;
-    margin-top: 30px;
+    background: white; color: black; font-weight: 800;
+    border-radius: 8px; padding: 14px 0; font-size: 14px;
+    border: none; margin-top: 30px;
 }
 .stButton > button:hover { background: #cccccc; transform: scale(0.99); }
 </style>
@@ -174,11 +163,11 @@ def get_signal(series, symbol):
     price = series.iloc[-1]
     sma200 = series.rolling(200).mean().iloc[-1]
     
-    # 2. DRAWDOWN LOGIC
+    # 2. DRAWDOWN LOGIC (CRASH PROTECTION)
     rolling_max = series.rolling(200, min_periods=1).max()
     cur_dd = (series - rolling_max).iloc[-1] / rolling_max.iloc[-1]
     
-    # 3. RSI LOGIC (14)
+    # 3. RSI LOGIC (MOMENTUM 14)
     delta = series.diff()
     gain = (delta.where(delta > 0, 0)).rolling(14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
@@ -231,12 +220,13 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
                     <div class="asset-reason">{x['reason']}</div>
                 </div>
                 <div class="val-box">
-                    <div class="val-main">${x['price']:,.2f}</div> <div class="val-sub tag-sell">MARKET PRICE</div>
+                    <div class="action-tag tag-text-sell">SELL NOW</div> <div class="val-main">${x['price']:,.2f}</div>
+                    <div class="val-sub">MARKET PRICE</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
-    # --- RENDER BUY CARDS (FIXED: PRICE INCLUDED) ---
+    # --- RENDER BUY CARDS ---
     if buy:
         st.markdown("<div class='section' style='color:#2ecc71'>ACQUISITION TARGETS</div>", unsafe_allow_html=True)
         base_w = {'BTC':0.2,'MSTR':0.2,'PLTR':0.35,'QQQ':0.15,'GLD':0.1}
@@ -251,16 +241,16 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
                 else: val, cur = f"${usd:,.2f}", "USD"
             else: val,cur="HOLD","-"
 
-            # KARTU BUY DENGAN HARGA PASAR
             st.markdown(f"""
             <div class="exec buy">
                 <div>
                     <div class="asset-name">{sym}</div>
-                    <div class="market-price">${x['price']:,.2f}</div> <div class="asset-reason">{x['reason']}</div>
+                    <div class="market-price">${x['price']:,.2f}</div>
+                    <div class="asset-reason">{x['reason']}</div>
                 </div>
                 <div class="val-box">
-                    <div class="val-main">{val}</div>
-                    <div class="val-sub tag-buy">{cur}</div>
+                    <div class="action-tag tag-text-buy">BUY</div> <div class="val-main">{val}</div>
+                    <div class="val-sub">{cur}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
