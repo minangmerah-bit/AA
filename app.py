@@ -7,11 +7,11 @@ import yfinance as yf
 st.set_page_config(
     page_title="Executor X1",
     layout="centered",
-    page_icon="💠"
+    page_icon="♟️" 
 )
 
 # =====================================================
-# 2. UI STYLE (CLEAN & FIXED)
+# 2. UI STYLE (CLEAN & PROFESSIONAL)
 # =====================================================
 st.markdown("""
 <style>
@@ -31,30 +31,30 @@ st.markdown("""
     padding-bottom: 2rem;
 }
 
-/* FONT */
+/* FONT GLOBAL */
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
     color: white;
 }
 
-/* --- FIX VISUAL BUG INPUT (THE MAGIC CSS) --- */
-/* Menyembunyikan tombol +/- yang bikin garis pecah */
+/* --- INPUT FIELD STYLING (THE FIX) --- */
+/* Menyembunyikan tombol +/- (Stepper) agar input bersih */
 div[data-testid="stNumberInputStepDown"], div[data-testid="stNumberInputStepUp"] {
     display: none !important;
 }
 
-/* Styling Kotak Input agar menyatu dan elegan */
+/* Styling Kotak Input agar menyatu matte hitam */
 div[data-baseweb="input"] {
     background-color: #111 !important;
     border: 1px solid #333 !important;
     border-radius: 8px !important;
     color: white !important;
-    padding: 4px 0; /* Padding vertikal biar kotak agak tinggi */
+    padding: 4px 0;
 }
 input {
     color: white !important;
     font-weight: 700 !important;
-    text-align: center !important; /* Angka di tengah biar rapi */
+    text-align: center !important; 
     font-size: 16px !important;
 }
 
@@ -69,7 +69,7 @@ input {
     color: #8e8e8e;
 }
 
-/* SECTION STYLE */
+/* SECTION LABELS */
 .section {
     margin-top: 1.5rem;
     font-size: 10px;
@@ -84,7 +84,7 @@ input {
     border-radius: 10px;
     padding: 12px 14px;
     margin-bottom: 8px;
-    border: 1px solid #222; /* Border tipis rapi */
+    border: 1px solid #222;
 }
 
 .buy { background: #102418; border-color: #143320; }
@@ -96,6 +96,7 @@ input {
     align-items: center;
 }
 
+/* TEXT ELEMENTS INSIDE CARDS */
 .asset { font-weight: 700; font-size: 15px; color: white; }
 .price { font-size: 11px; color: #9a9a9a; margin-top: 2px; }
 .action-sell { font-weight: 700; color: #ff6b6b; font-size: 13px; }
@@ -146,16 +147,15 @@ with r:
     )
 
 # =====================================================
-# INPUT (VISUAL BUG FIXED VIA CSS)
+# INPUT (VISUAL FIXED: NO BUTTONS)
 # =====================================================
 st.markdown("<div class='section'>CAPITAL CONFIG</div>", unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
-# step=0.0 penting agar streamlit tidak memaksa render tombol stepper, tapi CSS di atas adalah kunci utamanya
+# step=0.0 dan CSS di atas bekerja sama menghilangkan tombol +/-
 budget = c1.number_input("Target", 300.0, step=0.0, label_visibility="collapsed")
 used   = c2.number_input("Used", 0.0, step=0.0, label_visibility="collapsed")
 extra  = c3.number_input("Extra", 0.0, step=0.0, label_visibility="collapsed")
 
-# Label manual di bawah
 c1.caption("Target ($)")
 c2.caption("Used ($)")
 c3.caption("Extra ($)")
@@ -176,18 +176,21 @@ inv_data = {
 }
 
 # =====================================================
-# SIGNAL ENGINE (IDENTICAL)
+# SIGNAL ENGINE (PETER PROTOCOL - LOCKED)
 # =====================================================
 def get_signal(series, symbol):
     price = series.iloc[-1]
     sma200 = series.rolling(200).mean().iloc[-1]
+    # Drawdown Logic
     cur_dd = (series - series.rolling(200, min_periods=1).max()).iloc[-1] / series.rolling(200, min_periods=1).max().iloc[-1]
+    # RSI Logic
     rsi = 100 - (100 / (1 + (series.diff().where(lambda x:x>0,0).rolling(14).mean() /
                             (-series.diff().where(lambda x:x<0,0).rolling(14).mean()))))
     cur_rsi = rsi.iloc[-1]
 
     action, reason = "WAIT", "Stable"
 
+    # STRATEGY RULES
     if cur_rsi > 80 or (price - sma200)/sma200 > 0.6:
         action, reason = "SELL", f"Overheat RSI {cur_rsi:.0f}"
     elif price > sma200:
