@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# 2. UI ARCHITECTURE (GAP FIXED & REFINED KURS)
+# 2. UI ARCHITECTURE (MOBILE RESPONSIVE FIXED)
 # =====================================================
 st.markdown("""
 <style>
@@ -26,7 +26,7 @@ st.markdown("""
 .block-container {
     max-width: 680px;
     padding-top: 2rem;
-    padding-bottom: 2rem; /* Reduced padding bottom */
+    padding-bottom: 2rem; 
 }
 
 /* --- TYPOGRAPHY --- */
@@ -56,8 +56,34 @@ input {
     letter-spacing: 0.8px; text-align: left; padding-left: 2px;
 }
 
-/* --- HEADER STYLING --- */
-.title { font-size: 24px; font-weight: 700; color: white; letter-spacing: -0.5px; }
+/* --- HEADER FLEXBOX (SOLUSI MOBILE) --- */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end; /* Rata bawah agar sejajar */
+    width: 100%;
+    margin-bottom: 15px; /* Jarak ke section bawah */
+    border-bottom: 1px solid #1a1a1a; /* Garis tipis pemisah (opsional, biar rapi) */
+    padding-bottom: 10px;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-right {
+    text-align: right;
+    margin-bottom: 2px; /* Micro adjustment alignment */
+}
+
+.title { 
+    font-size: 24px; 
+    font-weight: 700; 
+    color: white; 
+    letter-spacing: -0.5px; 
+    line-height: 1.2;
+}
 
 .subtitle {
     font-size: 10px; 
@@ -69,9 +95,13 @@ input {
     opacity: 0.8;
 }
 
-/* [FIXED] SECTION MARGIN REDUCED TO CLOSE GAP */
+/* --- KURS INDICATOR STYLING --- */
+.kurs-label { color: #555; font-weight: 600; font-size: 11px; letter-spacing: 0.5px; }
+.kurs-value { color: #4caf50; font-weight: 700; font-size: 13px; font-family: monospace; }
+
+/* --- SECTION TITLE --- */
 .section {
-    margin-top: 1rem; /* SEBELUMNYA 2.5rem (TERLALU JAUH) */
+    margin-top: 0.5rem; /* RAPATKAN GAP */
     font-size: 10px; 
     letter-spacing: 1.5px;
     color: #555; 
@@ -79,10 +109,6 @@ input {
     font-weight: 700; 
     margin-bottom: 10px;
 }
-
-/* --- KURS INDICATOR STYLING --- */
-.kurs-label { color: #555; font-weight: 600; font-size: 11px; letter-spacing: 0.5px; }
-.kurs-value { color: #4caf50; font-weight: 700; font-size: 12px; font-family: monospace; }
 
 /* --- INTELLIGENT CARDS --- */
 .exec {
@@ -124,6 +150,16 @@ input {
     border: none; margin-top: 30px;
 }
 .stButton > button:hover { background: #cccccc; transform: scale(0.99); }
+
+/* --- MOBILE OPTIMIZATION --- */
+@media only screen and (max-width: 600px) {
+    .header-container {
+        align-items: flex-start; /* Pada HP, biar rapi */
+    }
+    .header-right {
+        margin-top: 5px; /* Sedikit jarak jika layar sangat sempit */
+    }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -137,26 +173,24 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# 4. HEADER UI (REFINED KURS & LAYOUT)
+# 4. HEADER UI (SINGLE BLOCK HTML - NO COLUMNS)
 # =====================================================
-l, r = st.columns([2.5, 1.5]) # Adjusted Ratio for better fit
-with l:
-    st.markdown("<div class='title'>9AM SYSTEM</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>ARCHITECT BY rizqynandaputra</div>", unsafe_allow_html=True)
-with r:
-    # UPDATED: KURS DISPLAY (RAPI & JELAS)
-    st.markdown(
-        f"""
-        <div style='text-align:right; padding-top:12px;'>
-            <span class='kurs-label'>KURS : </span>
-            <span class='kurs-value'>{kurs_rupiah:,.0f}</span>
-        </div>
-        """, 
-        unsafe_allow_html=True
-    )
+# Menggunakan satu container HTML agar menyatu di Mobile
+st.markdown(f"""
+<div class="header-container">
+    <div class="header-left">
+        <div class="title">9AM SYSTEM</div>
+        <div class="subtitle">ARCHITECT BY rizqynandaputra</div>
+    </div>
+    <div class="header-right">
+        <span class="kurs-label">KURS : </span>
+        <span class="kurs-value">{kurs_rupiah:,.0f}</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # =====================================================
-# 5. INPUT CONFIGURATION (GAP FIXED VIA CSS)
+# 5. INPUT CONFIGURATION
 # =====================================================
 st.markdown("<div class='section'>CAPITAL CONFIGURATION</div>", unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
