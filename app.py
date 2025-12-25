@@ -1,229 +1,279 @@
 import streamlit as st
 import yfinance as yf
-import pandas as pd
-import pandas_ta as ta
-import numpy as np
-import plotly.graph_objects as go
-from datetime import datetime, timedelta
 
-# --- CONFIGURATION (IDENTITY: SYNTAX KERNEL) ---
+# =====================================================
+# 1. SYSTEM CONFIGURATION
+# =====================================================
 st.set_page_config(
-    page_title="SYNTAX KERNEL",
-    layout="wide",
-    initial_sidebar_state="expanded",
-    page_icon="⚫"
+    page_title="SYNTAX KERNEL",  # UPDATED: NAME CHANGED
+    layout="centered"
+    # UPDATED: NO ICON
 )
 
-# --- CUSTOM CSS (DARK/MINIMALIST THEME) ---
+# =====================================================
+# 2. UI ARCHITECTURE (PREMIUM & LOGICALLY CORRECT)
+# =====================================================
 st.markdown("""
 <style>
-    .reportview-container {
-        background: #0e1117;
-    }
-    h1 {
-        font-family: 'Courier New', Courier, monospace;
-        color: #ffffff;
-        border-bottom: 2px solid #333;
-        padding-bottom: 10px;
-    }
-    .stButton>button {
-        background-color: #2b2b2b;
-        color: white;
-        border: 1px solid #444;
-        width: 100%;
-    }
-    .stButton>button:hover {
-        border-color: #00ff00;
-        color: #00ff00;
-    }
-    .metric-card {
-        background-color: #1c1c1c;
-        padding: 15px;
-        border-radius: 5px;
-        border-left: 5px solid #444;
-    }
+/* --- CORE CLEANUP --- */
+#MainMenu, footer, header {visibility: hidden;}
+[data-testid="stToolbar"] {visibility: hidden !important;}
+.stApp { background-color: #000000 !important; }
+
+/* --- CONTAINER --- */
+.block-container {
+    max-width: 680px;
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+}
+
+/* --- TYPOGRAPHY --- */
+body { font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif; color: white; }
+
+/* --- INPUT ENGINEERING --- */
+div[data-testid="stNumberInputStepDown"], div[data-testid="stNumberInputStepUp"] { display: none !important; }
+
+div[data-baseweb="input"] {
+    background-color: #111 !important;
+    border: 1px solid #333 !important;
+    border-radius: 8px !important;
+    padding: 8px 0;
+}
+input {
+    color: white !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    font-size: 18px !important;
+}
+.input-label {
+    font-size: 11px; color: #888; font-weight: 600;
+    margin-bottom: 6px; text-transform: uppercase;
+    letter-spacing: 0.8px; text-align: left; padding-left: 2px;
+}
+
+/* --- HEADER --- */
+.title { font-size: 24px; font-weight: 700; color: white; letter-spacing: -0.5px; }
+.subtitle {
+    font-size: 12px; color: #666;
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    margin-top: 4px;
+}
+.section {
+    margin-top: 2.5rem; font-size: 10px; letter-spacing: 1.5px;
+    color: #555; text-transform: uppercase; font-weight: 700; margin-bottom: 15px;
+}
+
+/* --- INTELLIGENT CARDS --- */
+.exec {
+    background-color: #0a0a0a;
+    border: 1px solid #222;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Border Indicators */
+.buy { border-left: 4px solid #2ecc71; }    /* Hijau */
+.sell { border-left: 4px solid #e74c3c; }   /* Merah */
+.hold { border-left: 4px solid #555555; }   /* Abu-abu (New Logic) */
+
+/* Left Side: Asset Info */
+.asset-name { font-weight: 800; font-size: 17px; color: white; margin-bottom: 2px; }
+.market-price { font-size: 13px; color: #eee; font-weight: 600; font-family: monospace; }
+.asset-reason { font-size: 10px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
+
+/* Right Side: Action & Value */
+.val-box { text-align: right; }
+
+/* PREMIUM MICRO-LABELS */
+.action-tag {
+    font-size: 10px; font-weight: 800; letter-spacing: 1.2px;
+    text-transform: uppercase; margin-bottom: 2px; display: block;
+}
+.tag-text-buy { color: #2ecc71; }
+.tag-text-sell { color: #e74c3c; }
+.tag-text-hold { color: #777; } /* Warna Netral untuk Hold */
+
+.val-main { font-weight: 800; font-size: 16px; color: white; }
+.val-sub { font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px; margin-top: 2px;}
+
+/* --- BUTTON --- */
+.stButton > button {
+    width: 100%; background: white; color: black; font-weight: 800;
+    border-radius: 8px; padding: 14px 0; font-size: 14px;
+    border: none; margin-top: 30px;
+}
+.stButton > button:hover { background: #cccccc; transform: scale(0.99); }
 </style>
 """, unsafe_allow_html=True)
 
-# --- HEADER ---
-st.title("SYNTAX KERNEL // GRID SEARCH ENGINE")
-st.markdown("`STATUS: ONLINE` | `MODE: EXHAUSTIVE COMPUTE` | `MODULE: STRATEGY OPTIMIZER`")
-st.markdown("---")
+# =====================================================
+# 3. FX LOGIC (PETER PROTOCOL - LOCKED)
+# =====================================================
+@st.cache_data(ttl=3600)
+def get_usd_idr():
+    try: return yf.Ticker("IDR=X").history(period="1d")['Close'].iloc[-1]
+    except: return 16000.0
+kurs_rupiah = get_usd_idr()
 
-# --- SIDEBAR: PARAMETER INPUT ---
-st.sidebar.header("/// INPUT VECTOR")
+# =====================================================
+# 4. HEADER
+# =====================================================
+l, r = st.columns([3,1])
+with l:
+    st.markdown("<div class='title'>SYNTAX KERNEL</div>", unsafe_allow_html=True) # UPDATED: HEADER CHANGED
+    st.markdown("<div class='subtitle'>rizqynandaputra</div>", unsafe_allow_html=True)
+with r:
+    st.markdown(f"<div style='text-align:right;font-size:11px;color:#555;padding-top:10px;font-family:monospace'>IDR {kurs_rupiah:,.0f}</div>", unsafe_allow_html=True)
 
-ticker = st.sidebar.text_input("ASSET TICKER", value="BTC-USD").upper()
-start_date = st.sidebar.date_input("START DATE", value=pd.to_datetime("2020-01-01"))
-end_date = st.sidebar.date_input("END DATE", value=pd.to_datetime("today"))
-initial_capital = st.sidebar.number_input("INITIAL CAPITAL ($)", value=10000)
+# =====================================================
+# 5. INPUT CONFIGURATION
+# =====================================================
+st.markdown("<div class='section'>CAPITAL CONFIGURATION</div>", unsafe_allow_html=True)
+c1, c2, c3 = st.columns(3)
+with c1:
+    st.markdown("<div class='input-label'>TARGET ($)</div>", unsafe_allow_html=True)
+    budget = st.number_input("Target", 300.0, step=1.0, label_visibility="collapsed")
+with c2:
+    st.markdown("<div class='input-label'>USED ($)</div>", unsafe_allow_html=True)
+    used = st.number_input("Used", 0.0, step=1.0, label_visibility="collapsed")
+with c3:
+    st.markdown("<div class='input-label'>EXTRA ($)</div>", unsafe_allow_html=True)
+    extra = st.number_input("Extra", 0.0, step=1.0, label_visibility="collapsed")
 
-st.sidebar.markdown("---")
-st.sidebar.header("/// GRID SEARCH SPACE")
+total_dana_usd = (budget - used) + extra
 
-# RSI Parameters Range
-rsi_lower_start = st.sidebar.number_input("RSI Lower Start", value=20)
-rsi_lower_end = st.sidebar.number_input("RSI Lower End", value=40)
-rsi_step = st.sidebar.number_input("RSI Step", value=5)
+st.markdown("<div class='section'>INVENTORY STATUS (ON = EMPTY)</div>", unsafe_allow_html=True)
+i1, i2, i3 = st.columns(3)
+no_pltr = i1.toggle("PLTR", False); no_qqq = i1.toggle("QQQ", False)
+no_btc = i2.toggle("BTC", False); no_gld = i2.toggle("GLD", False)
+no_mstr = i3.toggle("MSTR", False)
+inv_data = {'PLTR': not no_pltr, 'BTC': not no_btc, 'MSTR': not no_mstr, 'QQQ': not no_qqq, 'GLD': not no_gld}
 
-# MA Parameters Range
-ma_fast_start = st.sidebar.number_input("MA Fast Start", value=20)
-ma_fast_end = st.sidebar.number_input("MA Fast End", value=50)
-ma_step = st.sidebar.number_input("MA Step", value=10)
-
-run_search = st.sidebar.button("INITIATE SYNTAX KERNEL")
-
-# --- CORE LOGIC ---
-def fetch_data(ticker, start, end):
-    try:
-        df = yf.download(ticker, start=start, end=end, progress=False)
-        if df.empty:
-            return None
-        return df
-    except Exception as e:
-        st.error(f"DATA FETCH ERROR: {e}")
-        return None
-
-def backtest_strategy(df, rsi_limit, ma_window, capital):
-    # Copy data to avoid mutation
-    data = df.copy()
+# =====================================================
+# 6. ALGORITHM ENGINE (CORE)
+# =====================================================
+def get_signal(series, symbol):
+    # 1. DATA EXTRACTION
+    price = series.iloc[-1]
+    sma200 = series.rolling(200).mean().iloc[-1]
     
-    # Calculate Indicators
-    data['RSI'] = ta.rsi(data['Close'], length=14)
-    data['MA'] = ta.sma(data['Close'], length=ma_window)
+    # 2. DRAWDOWN LOGIC (CRASH PROTECTION)
+    rolling_max = series.rolling(200, min_periods=1).max()
+    cur_dd = (series - rolling_max).iloc[-1] / rolling_max.iloc[-1]
     
-    # Logic: Buy if RSI < Limit AND Price > MA (Trend Filter)
-    data['Signal'] = 0
-    data.loc[(data['RSI'] < rsi_limit) & (data['Close'] > data['MA']), 'Signal'] = 1 # BUY
-    data.loc[data['RSI'] > 70, 'Signal'] = -1 # SELL (Simple Exit)
-    
-    # Position Simulation
-    position = 0 # 0: Cash, 1: Invested
-    balance = capital
-    holdings = 0
-    
-    # Vectorized approach is harder for complex logic, using loop for clarity in backtest
-    # For speed in grid search, we simplify:
-    
-    entry_dates = []
-    exit_dates = []
-    
-    # Simulation Loop
-    for i in range(1, len(data)):
-        price = data['Close'].iloc[i]
-        signal = data['Signal'].iloc[i]
-        
-        if position == 0 and signal == 1: # BUY
-            holdings = balance / price
-            balance = 0
-            position = 1
-            entry_dates.append(data.index[i])
-            
-        elif position == 1 and signal == -1: # SELL
-            balance = holdings * price
-            holdings = 0
-            position = 0
-            exit_dates.append(data.index[i])
-            
-    # Final Value
-    final_val = balance if position == 0 else holdings * data['Close'].iloc[-1]
-    ret = ((final_val - capital) / capital) * 100
-    
-    return final_val, ret
+    # 3. RSI LOGIC (MOMENTUM 14)
+    delta = series.diff()
+    gain = (delta.where(delta > 0, 0)).rolling(14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    cur_rsi = rsi.iloc[-1]
 
-# --- EXECUTION ---
-if run_search:
-    data = fetch_data(ticker, start_date, end_date)
+    action, reason = "WAIT", "Stable"
+
+    # 4. DECISION HIERARCHY
+    if cur_rsi > 80 or (price - sma200)/sma200 > 0.6: 
+        action, reason = "SELL", f"Overheat RSI {cur_rsi:.0f}"
+    elif price > sma200: 
+        action, reason = "BUY", "Uptrend"
+    elif (symbol=='PLTR' and cur_dd < -0.30) or (symbol in ['BTC','MSTR'] and cur_dd < -0.20): 
+        action, reason = "BUY", f"Dip {cur_dd*100:.0f}%"
+
+    return price, reason, action
+
+# =====================================================
+# 7. EXECUTION & RENDERING
+# =====================================================
+st.write("")
+if st.button("RUN DIAGNOSTIC", use_container_width=True):
+    tickers = {'PLTR':'PLTR', 'BTC-USD':'BTC', 'MSTR':'MSTR', 'QQQ':'QQQ', 'GLD':'GLD'}
+    sell, buy = [], []
     
-    if data is not None:
-        st.write(f"**TARGET ACQUIRED:** {ticker} // **DATA POINTS:** {len(data)}")
-        
-        # Grid Generation
-        rsi_range = range(rsi_lower_start, rsi_lower_end + 1, rsi_step)
-        ma_range = range(ma_fast_start, ma_fast_end + 1, ma_step)
-        
-        results = []
-        
-        progress_bar = st.progress(0)
-        total_iterations = len(rsi_range) * len(ma_range)
-        iteration = 0
-        
-        status_text = st.empty()
-        
-        # GRID SEARCH LOOP
-        for r in rsi_range:
-            for m in ma_range:
-                status_text.text(f"COMPUTING: RSI < {r} | MA {m}...")
-                final_val, ret = backtest_strategy(data, r, m, initial_capital)
-                results.append({
-                    'RSI_Limit': r,
-                    'MA_Window': m,
-                    'Final_Balance': final_val,
-                    'Return_%': ret
-                })
-                iteration += 1
-                progress_bar.progress(iteration / total_iterations)
-        
-        status_text.text("COMPUTATION COMPLETE.")
-        
-        # Results Processing
-        results_df = pd.DataFrame(results)
-        best_result = results_df.loc[results_df['Return_%'].idxmax()]
-        
-        # --- OUTPUT DISPLAY ---
-        st.markdown("### /// OPTIMIZATION RESULTS")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
+    with st.spinner("Processing Market Data..."):
+        for sym, key in tickers.items():
+            try:
+                df = yf.download(sym, period="300d", interval="1d", progress=False)
+                if df.empty: continue
+                px = df['Close'] if isinstance(df.columns,str) else df.xs('Close',axis=1,level=0).iloc[:,0]
+                
+                price, reason, action = get_signal(px, key)
+                item = {'sym': key, 'price': price, 'reason': reason}
+                
+                if action=="SELL" and inv_data.get(key,True): sell.append(item)
+                elif action=="BUY": buy.append(item)
+            except: pass
+
+    # --- RENDER SELL CARDS ---
+    if sell:
+        st.markdown("<div class='section' style='color:#e74c3c'>LIQUIDATION ORDER</div>", unsafe_allow_html=True)
+        for x in sell:
             st.markdown(f"""
-            <div class="metric-card">
-                <small>BEST RETURN</small><br>
-                <h2 style="color: #00ff00;">{best_result['Return_%']:.2f}%</h2>
+            <div class="exec sell">
+                <div>
+                    <div class="asset-name">{x['sym']}</div>
+                    <div class="asset-reason">{x['reason']}</div>
+                </div>
+                <div class="val-box">
+                    <div class="action-tag tag-text-sell">SELL NOW</div>
+                    <div class="val-main">${x['price']:,.2f}</div>
+                    <div class="val-sub">MARKET PRICE</div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
-            
-        with col2:
-            st.markdown(f"""
-            <div class="metric-card">
-                <small>OPTIMAL RSI LIMIT</small><br>
-                <h2>{int(best_result['RSI_Limit'])}</h2>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        with col3:
-            st.markdown(f"""
-            <div class="metric-card">
-                <small>OPTIMAL MA WINDOW</small><br>
-                <h2>{int(best_result['MA_Window'])}</h2>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        st.markdown("### /// HEATMAP VISUALIZATION")
-        
-        # Pivot for Heatmap
-        heatmap_data = results_df.pivot(index='RSI_Limit', columns='MA_Window', values='Return_%')
-        
-        fig = go.Figure(data=go.Heatmap(
-            z=heatmap_data.values,
-            x=heatmap_data.columns,
-            y=heatmap_data.index,
-            colorscale='Viridis',
-            text=np.round(heatmap_data.values, 2),
-            texttemplate="%{text}%"
-        ))
-        
-        fig.update_layout(
-            title='PROFITABILITY MATRIX',
-            xaxis_title='MA Window',
-            yaxis_title='RSI Buy Limit',
-            template='plotly_dark'
-        )
-        
-        st.plotly_chart(fig, use_container_width=True)
-        
-        st.markdown("### /// RAW DATA LOG")
-        st.dataframe(results_df.sort_values(by='Return_%', ascending=False), use_container_width=True)
 
-    else:
-        st.error("DATA FETCH FAILED. CHECK TICKER OR CONNECTION.")
+    # --- RENDER BUY CARDS (LOGIC CHECK: FUNDING) ---
+    if buy:
+        # LOGIC CHECK: Apakah ada uang?
+        has_funds = total_dana_usd > 1
+        
+        # Tentukan Warna Header Section
+        header_color = "#2ecc71" if has_funds else "#777"
+        header_text = "ACQUISITION TARGETS" if has_funds else "WATCHLIST (NO FUNDS)"
+        
+        st.markdown(f"<div class='section' style='color:{header_color}'>{header_text}</div>", unsafe_allow_html=True)
+        
+        base_w = {'BTC':0.2,'MSTR':0.2,'PLTR':0.35,'QQQ':0.15,'GLD':0.1}
+        active = {x['sym']:base_w.get(x['sym'],0) for x in buy}
+        total_w = sum(active.values())
+        
+        for x in buy:
+            sym = x['sym']
+            
+            # --- LOGIC BRANCHING ---
+            if has_funds and total_w > 0:
+                # SCENARIO A: MARKET BUY + ADA UANG -> TAMPILKAN BUY (HIJAU)
+                usd = total_dana_usd * active[sym]/total_w
+                if sym in ['BTC','GLD']: val, cur = f"Rp {usd*kurs_rupiah:,.0f}", "IDR"
+                else: val, cur = f"${usd:,.2f}", "USD"
+                
+                card_class = "buy"
+                tag_class = "tag-text-buy"
+                tag_label = "BUY"
+            else:
+                # SCENARIO B: MARKET BUY + TIDAK ADA UANG -> TAMPILKAN HOLD (ABU)
+                val, cur = "0.00", "-"
+                card_class = "hold" # Class baru (Abu-abu)
+                tag_class = "tag-text-hold"
+                tag_label = "HOLD" # Sesuai request: Jangan tulisan BUY kalau uang 0
+            
+            # RENDER CARD
+            st.markdown(f"""
+            <div class="exec {card_class}">
+                <div>
+                    <div class="asset-name">{sym}</div>
+                    <div class="market-price">${x['price']:,.2f}</div>
+                    <div class="asset-reason">{x['reason']}</div>
+                </div>
+                <div class="val-box">
+                    <div class="action-tag {tag_class}">{tag_label}</div>
+                    <div class="val-main">{val}</div>
+                    <div class="val-sub">{cur}</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    if not sell and not buy: st.info("System Stable. No Action Required.")
