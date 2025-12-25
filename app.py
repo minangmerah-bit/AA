@@ -5,7 +5,7 @@ import yfinance as yf
 # 1. SYSTEM CONFIGURATION
 # =====================================================
 st.set_page_config(
-    page_title="SYNTAX KERNEL", 
+    page_title="9AM SYSTEM", 
     layout="centered"
 )
 
@@ -126,13 +126,13 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# 4. HEADER UI (ARCHITECT BRANDING APPLIED)
+# 4. HEADER UI (CORRECTED IDENTITY)
 # =====================================================
 l, r = st.columns([3,1])
 with l:
-    st.markdown("<div class='title'>SYNTAX KERNEL</div>", unsafe_allow_html=True)
-    # UPDATED: COOL ARCHITECT TITLE
-    st.markdown("<div class='subtitle'>9AM SYSTEM ARCHITECT</div>", unsafe_allow_html=True)
+    # UPDATED: FINAL BRANDING
+    st.markdown("<div class='title'>9AM SYSTEM</div>", unsafe_allow_html=True)
+    st.markdown("<div class='subtitle'>ARCHITECT BY rizqynandaputra</div>", unsafe_allow_html=True)
 with r:
     st.markdown(f"<div style='text-align:right;font-size:11px;color:#555;padding-top:10px;font-family:monospace'>IDR {kurs_rupiah:,.0f}</div>", unsafe_allow_html=True)
 
