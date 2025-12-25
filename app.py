@@ -7,7 +7,7 @@ import yfinance as yf
 st.set_page_config(
     page_title="Executor X1",
     layout="centered"
-    # Page Icon dihapus sesuai permintaan (Default Streamlit)
+    # Page Icon menggunakan default Streamlit (Netral)
 )
 
 # =====================================================
@@ -67,6 +67,7 @@ input {
 .subtitle {
     font-size: 11px;
     color: #8e8e8e;
+    font-family: monospace; /* Monospace agar terlihat seperti coding signature */
 }
 
 /* SECTION LABELS */
@@ -134,12 +135,13 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# HEADER
+# HEADER (UPDATED IDENTITY)
 # =====================================================
 l, r = st.columns([3,1])
 with l:
     st.markdown("<div class='title'>EXECUTOR X1</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>Architect: Peter</div>", unsafe_allow_html=True)
+    # GANTI NAMA DI SINI (Lowercase, Joined)
+    st.markdown("<div class='subtitle'>rizqynandaputra</div>", unsafe_allow_html=True)
 with r:
     st.markdown(
         f"<div style='text-align:right;font-size:11px;color:#8e8e8e;padding-top:10px'>IDR {kurs_rupiah:,.0f}</div>",
