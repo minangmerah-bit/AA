@@ -7,15 +7,14 @@ import yfinance as yf
 st.set_page_config(
     page_title="Executor X1",
     layout="centered"
-    # Page Icon menggunakan default Streamlit (Netral/Kosong)
 )
 
 # =====================================================
-# 2. UI STYLE (MATTE BLACK, LEFT LABELS, CENTER INPUT)
+# 2. UI STYLE (MATTE BLACK, LEFT LABELS, FIXED OUTPUT)
 # =====================================================
 st.markdown("""
 <style>
-/* HIDE STREAMLIT DEFAULT ELEMENTS */
+/* HIDE STREAMLIT ELEMENTS */
 #MainMenu, footer, header {visibility: hidden;}
 [data-testid="stToolbar"] {visibility: hidden !important;}
 
@@ -38,37 +37,37 @@ body {
 }
 
 /* --- INPUT FIELD ENGINEERING --- */
-/* 1. HILANGKAN TOMBOL +/- (Stepper) */
+/* 1. HILANGKAN TOMBOL +/- (Stepper) SECARA VISUAL */
 div[data-testid="stNumberInputStepDown"], div[data-testid="stNumberInputStepUp"] {
     display: none !important;
 }
 
 /* 2. STYLING KOTAK INPUT */
 div[data-baseweb="input"] {
-    background-color: #111 !important; /* Abu Gelap Matte */
-    border: 1px solid #333 !important; /* Border Halus */
+    background-color: #111 !important;
+    border: 1px solid #333 !important;
     border-radius: 8px !important;
     color: white !important;
-    padding: 8px 0; /* Padding vertikal agar kotak terlihat kokoh */
+    padding: 8px 0;
 }
 
 /* 3. TEKS DI DALAM INPUT (ANGKA) */
 input {
     color: white !important;
     font-weight: 700 !important;
-    text-align: center !important; /* Angka tetap di tengah (Hero Value) */
+    text-align: center !important; 
     font-size: 18px !important;
 }
 
-/* 4. LABEL KUSTOM (JUDUL DI ATAS KOTAK) */
+/* 4. LABEL KUSTOM (RATA KIRI) */
 .input-label {
     font-size: 11px;
-    color: #888; /* Abu terang agar kontras tapi tidak menyilaukan */
+    color: #888;
     font-weight: 600;
     margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    text-align: left; /* RATA KIRI SESUAI REQUEST */
+    text-align: left; /* FIX: Rata Kiri */
     padding-left: 2px;
 }
 
@@ -82,7 +81,7 @@ input {
 .subtitle {
     font-size: 12px;
     color: #666;
-    font-family: "SF Mono", "Roboto Mono", monospace; /* Coding Signature Style */
+    font-family: "SF Mono", "Roboto Mono", monospace;
     margin-top: 4px;
 }
 
@@ -97,31 +96,32 @@ input {
     margin-bottom: 15px;
 }
 
-/* EXECUTION CARDS */
+/* --- EXECUTION CARDS (KEMBALI KE VERSI "ZENITH" YANG TERBAIK) --- */
 .exec {
+    background-color: #0a0a0a;
+    border: 1px solid #222;
     border-radius: 10px;
     padding: 14px 16px;
     margin-bottom: 8px;
-    border: 1px solid #222;
-    background-color: #050505;
-}
-
-.buy { border-left: 3px solid #2ecc71; }
-.sell { border-left: 3px solid #e74c3c; }
-
-.exec-top {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Layout Kiri-Kanan Rapi */
     align-items: center;
 }
 
-/* CARD TYPOGRAPHY */
-.asset { font-weight: 700; font-size: 15px; color: white; }
-.price { font-size: 11px; color: #888; margin-top: 2px; }
-.action-sell { font-weight: 800; color: #e74c3c; font-size: 13px; }
-.value { font-weight: 700; font-size: 15px; color: white; }
-.currency { font-size: 10px; color: #888; text-align: right; }
-.reason { font-size: 10px; color: #666; margin-top: 6px; padding-top:6px; border-top: 1px solid #1a1a1a; text-transform: uppercase; }
+/* WARNA BORDER KIRI (Visual Indicator) */
+.buy { border-left: 4px solid #2ecc71; } /* Hijau Terang */
+.sell { border-left: 4px solid #e74c3c; } /* Merah Terang */
+
+/* TYPOGRAPHY KARTU HASIL */
+.asset-name { font-weight: 700; font-size: 16px; color: white; }
+.asset-sub { font-size: 11px; color: #777; margin-top: 2px; }
+
+.val-box { text-align: right; }
+.val-main { font-weight: 700; font-size: 16px; color: white; }
+.val-sub { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; margin-top: 2px;}
+
+.tag-buy { color: #2ecc71; }
+.tag-sell { color: #e74c3c; }
 
 /* BUTTON STYLE */
 .stButton > button {
@@ -144,7 +144,7 @@ input {
 """, unsafe_allow_html=True)
 
 # =====================================================
-# 3. FX LOGIC (PETER PROTOCOL - LOCKED & VALIDATED)
+# 3. FX LOGIC (PETER PROTOCOL - LOCKED & AUDITED)
 # =====================================================
 @st.cache_data(ttl=3600)
 def get_usd_idr():
@@ -156,7 +156,7 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# 4. HEADER (IDENTITY: rizqynandaputra)
+# 4. HEADER (rizqynandaputra)
 # =====================================================
 l, r = st.columns([3,1])
 with l:
@@ -169,25 +169,24 @@ with r:
     )
 
 # =====================================================
-# 5. INPUT SECTION (PERFECT ALIGNMENT)
+# 5. INPUT SECTION (FIXED: STEP 1.0)
 # =====================================================
 st.markdown("<div class='section'>CAPITAL CONFIGURATION</div>", unsafe_allow_html=True)
 
 c1, c2, c3 = st.columns(3)
 
 with c1:
-    # Label Manual (HTML) Rata Kiri
     st.markdown("<div class='input-label'>TARGET ($)</div>", unsafe_allow_html=True)
-    # Input Streamlit (Angka Tengah, Tanpa Label Bawaan)
-    budget = st.number_input("Target", 300.0, step=0.0, label_visibility="collapsed")
+    # FIX: step=1.0 agar tombol +/- (jika ditekan via keyboard) nambahnya 1, bukan 0.01
+    budget = st.number_input("Target", 300.0, step=1.0, label_visibility="collapsed")
 
 with c2:
     st.markdown("<div class='input-label'>USED ($)</div>", unsafe_allow_html=True)
-    used = st.number_input("Used", 0.0, step=0.0, label_visibility="collapsed")
+    used = st.number_input("Used", 0.0, step=1.0, label_visibility="collapsed")
 
 with c3:
     st.markdown("<div class='input-label'>EXTRA ($)</div>", unsafe_allow_html=True)
-    extra = st.number_input("Extra", 0.0, step=0.0, label_visibility="collapsed")
+    extra = st.number_input("Extra", 0.0, step=1.0, label_visibility="collapsed")
 
 total_dana_usd = (budget - used) + extra
 
@@ -205,19 +204,17 @@ inv_data = {
 }
 
 # =====================================================
-# 6. ENGINE CORE (DO NOT MODIFY)
+# 6. ENGINE CORE (LOCKED)
 # =====================================================
 def get_signal(series, symbol):
     price = series.iloc[-1]
     sma200 = series.rolling(200).mean().iloc[-1]
     
-    # 1. DRAWDOWN CALCULATION (For Dip Buying)
-    # Menghitung persentase jatuh dari titik tertinggi 200 hari terakhir
+    # Drawdown Calculation
     rolling_max = series.rolling(200, min_periods=1).max()
     cur_dd = (series - rolling_max).iloc[-1] / rolling_max.iloc[-1]
     
-    # 2. RSI CALCULATION (For Overheat/Sell)
-    # RSI 14 Periode Standar
+    # RSI Calculation
     delta = series.diff()
     gain = (delta.where(delta > 0, 0)).rolling(14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
@@ -227,17 +224,11 @@ def get_signal(series, symbol):
 
     action, reason = "WAIT", "Stable"
 
-    # 3. DECISION MATRIX (HIERARCHY)
-    # A. SELL SIGNAL (Priority 1): RSI Overheat (>80) atau Harga terlalu jauh dari SMA (>60%)
+    # STRATEGY RULES
     if cur_rsi > 80 or (price - sma200)/sma200 > 0.6:
         action, reason = "SELL", f"Overheat RSI {cur_rsi:.0f}"
-    
-    # B. BUY TREND (Priority 2): Harga di atas SMA200 (Uptrend aman)
     elif price > sma200:
         action, reason = "BUY", "Uptrend"
-    
-    # C. BUY DIP (Priority 3): Crash Detection
-    # PLTR diskon 30%, BTC/MSTR diskon 20%
     elif (symbol=='PLTR' and cur_dd < -0.30) or (symbol in ['BTC','MSTR'] and cur_dd < -0.20):
         action, reason = "BUY", f"Dip {cur_dd*100:.0f}%"
 
@@ -259,23 +250,15 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
     with st.spinner("Processing Market Data..."):
         for sym, key in tickers.items():
             try:
-                # Download Data 300 Hari (Cukup untuk SMA200 + Buffer)
                 df = yf.download(sym, period="300d", interval="1d", progress=False)
                 if df.empty: continue
 
-                # Extract Series Close
                 px = df['Close'] if isinstance(df.columns,str) else df.xs('Close',axis=1,level=0).iloc[:,0]
-                
-                # Get Signal
                 price, reason, action = get_signal(px, key)
-
                 item = {'sym': key, 'price': price, 'reason': reason}
                 
-                # Filter Logic:
-                # Sell hanya jika barang ada di inventory
                 if action=="SELL" and inv_data.get(key,True):
                     sell.append(item)
-                # Buy ditampung dulu untuk pembobotan
                 elif action=="BUY":
                     buy.append(item)
             except: pass
@@ -286,14 +269,13 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
         for x in sell:
             st.markdown(f"""
             <div class="exec sell">
-                <div class="exec-top">
-                    <div>
-                        <div class="asset">{x['sym']}</div>
-                        <div class="price">${x['price']:,.2f}</div>
-                    </div>
-                    <div class="action-sell">SELL</div>
+                <div>
+                    <div class="asset-name">{x['sym']}</div>
+                    <div class="asset-sub">${x['price']:,.2f} • {x['reason']}</div>
                 </div>
-                <div class="reason">{x['reason']}</div>
+                <div class="val-box">
+                    <div class="val-main tag-sell">SELL</div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -301,19 +283,14 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
     if buy:
         st.markdown("<div class='section' style='color:#2ecc71'>ACQUISITION TARGETS</div>", unsafe_allow_html=True)
 
-        # Weighting System (Bobot Portofolio)
         base_w = {'BTC':0.2,'MSTR':0.2,'PLTR':0.35,'QQQ':0.15,'GLD':0.1}
-        
-        # Hitung Total Bobot Aktif (Hanya aset yang sinyalnya BUY)
         active = {x['sym']:base_w.get(x['sym'],0) for x in buy}
         total_w = sum(active.values())
 
         for x in buy:
             sym = x['sym']
-            # Alokasi Dana Proporsional
             if total_dana_usd > 1 and total_w > 0:
                 usd = total_dana_usd * active[sym]/total_w
-                # Konversi Mata Uang Visual
                 if sym in ['BTC','GLD']:
                     val, cur = f"Rp {usd*kurs_rupiah:,.0f}", "IDR"
                 else:
@@ -323,17 +300,14 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
 
             st.markdown(f"""
             <div class="exec buy">
-                <div class="exec-top">
-                    <div>
-                        <div class="asset">{sym}</div>
-                        <div class="price">${x['price']:,.2f}</div>
-                    </div>
-                    <div>
-                        <div class="value">{val}</div>
-                        <div class="currency">{cur}</div>
-                    </div>
+                <div>
+                    <div class="asset-name">{sym}</div>
+                    <div class="asset-sub">{x['reason']}</div>
                 </div>
-                <div class="reason">{x['reason']}</div>
+                <div class="val-box">
+                    <div class="val-main">{val}</div>
+                    <div class="val-sub tag-buy">{cur}</div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
