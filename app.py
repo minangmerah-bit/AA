@@ -2,36 +2,29 @@ import streamlit as st
 import yfinance as yf
 
 # =====================================================
-# 1. SYSTEM CONFIG
+# SYSTEM CONFIG
 # =====================================================
 st.set_page_config(
     page_title="Executor X1",
-    page_icon="💠",
-    layout="centered",
-    initial_sidebar_state="collapsed" # Menyembunyikan sidebar
+    page_icon="💠",  # Saya pastikan icon tetap ada
+    layout="centered"
 )
 
 # =====================================================
-# 2. UI STYLE & HACK (HIDE MENU & FORCE BLACK)
+# MOBILE-FIRST UI STYLE
 # =====================================================
 st.markdown("""
 <style>
-/* --- HIDE STREAMLIT UI ELEMENTS (BERSIH TOTAL) --- */
-#MainMenu {visibility: hidden;}
-header {visibility: hidden;}
-footer {visibility: hidden;}
-[data-testid="stToolbar"] {visibility: hidden !important;} /* Sembunyikan Manage App */
-.stDeployButton {display:none;} /* Sembunyikan tombol Deploy jika ada */
+#MainMenu, footer, header {visibility: hidden;}
 
-/* --- FORCE BLACK BACKGROUND (MOBILE) --- */
+/* Force Black Background untuk HP */
 .stApp {
     background-color: #000000 !important;
 }
 
-/* --- LAYOUT ADJUSTMENT --- */
 .block-container {
     max-width: 680px;
-    padding-top: 2rem; /* Jarak atas disesuaikan krn header hilang */
+    padding-top: 1.6rem;
     padding-bottom: 2rem;
 }
 
@@ -40,39 +33,37 @@ body {
     color: white;
 }
 
-/* --- CUSTOM TYPOGRAPHY --- */
+/* Header */
 .title {
     font-size: 24px;
     font-weight: 700;
     color: white;
-    letter-spacing: -0.5px;
 }
 .subtitle {
     font-size: 11px;
     color: #8e8e8e;
-    margin-bottom: 20px;
 }
 
-/* --- SECTION LABELS --- */
+/* Section */
 .section {
-    margin-top: 1.5rem;
+    margin-top: 1.2rem;
     font-size: 10px;
     letter-spacing: 0.14em;
     color: #8e8e8e;
     text-transform: uppercase;
-    font-weight: 600;
 }
 
-/* --- EXECUTION CARDS --- */
+/* Execution item */
 .exec {
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    border: 1px solid #222;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border: 1px solid #222; /* Tambahan border tipis biar rapi */
 }
 
-.buy { background: #102418; border-color: #143320; }
-.sell { background: #2a1416; border-color: #3d1a1d; }
+.buy { background: #102418; }
+.sell { background: #2a1416; }
+.wait { background: #161618; }
 
 .exec-top {
     display: flex;
@@ -81,22 +72,21 @@ body {
 }
 
 .asset {
-    font-weight: 700;
-    font-size: 15px;
+    font-weight: 600;
+    font-size: 14px;
     color: white;
 }
 
 .price {
     font-size: 11px;
-    color: #999;
+    color: #9a9a9a;
     margin-top: 2px;
 }
 
 .action-sell {
-    font-weight: 800;
+    font-weight: 700;
     color: #ff6b6b;
     font-size: 13px;
-    letter-spacing: 0.5px;
 }
 
 .value {
@@ -107,19 +97,17 @@ body {
 
 .currency {
     font-size: 10px;
-    color: #888;
+    color: #9a9a9a;
     text-align: right;
 }
 
 .reason {
     font-size: 11px;
-    color: #888;
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px solid rgba(255,255,255,0.05);
+    color: #9a9a9a;
+    margin-top: 2px;
 }
 
-/* --- INPUT FIELDS --- */
+/* Input Fields Dark Mode */
 div[data-baseweb="input"] {
     background-color: #111 !important;
     border: 1px solid #333 !important;
@@ -128,27 +116,24 @@ div[data-baseweb="input"] {
 }
 input { color: white !important; }
 
-/* --- BUTTON --- */
+/* Button */
 .stButton > button {
     background: white;
     color: black;
-    font-weight: 700;
+    font-weight: 600;
     border-radius: 10px;
-    padding: 0.75rem;
+    padding: 0.6rem;
     border: none;
     width: 100%;
-    margin-top: 10px;
-    transition: 0.2s;
 }
 .stButton > button:hover {
     background: #e0e0e0;
-    transform: scale(0.99);
 }
 </style>
 """, unsafe_allow_html=True)
 
 # =====================================================
-# 3. FX LOGIC (PETER PROTOCOL)
+# FX LOGIC
 # =====================================================
 @st.cache_data(ttl=3600)
 def get_usd_idr():
@@ -160,35 +145,35 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# 4. HEADER UI
+# HEADER
 # =====================================================
-c1, c2 = st.columns([3,1])
-with c1:
+l, r = st.columns([3,1])
+with l:
     st.markdown("<div class='title'>EXECUTOR X1</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>Architect: Peter</div>", unsafe_allow_html=True)
-with c2:
+with r:
     st.markdown(
-        f"<div style='text-align:right;font-size:11px;color:#8e8e8e;padding-top:8px'>IDR {kurs_rupiah:,.0f}</div>",
+        f"<div style='text-align:right;font-size:11px;color:#8e8e8e;padding-top:10px'>IDR {kurs_rupiah:,.0f}</div>",
         unsafe_allow_html=True
     )
 
 # =====================================================
-# 5. INPUTS
+# INPUT
 # =====================================================
-st.markdown("<div class='section'>CAPITAL CONFIGURATION</div>", unsafe_allow_html=True)
+st.markdown("<div class='section'>CAPITAL</div>", unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
 budget = c1.number_input("Target", 300.0, step=10.0, label_visibility="collapsed")
 used   = c2.number_input("Used", 0.0, step=10.0, label_visibility="collapsed")
 extra  = c3.number_input("Extra", 0.0, step=10.0, label_visibility="collapsed")
 
-# Label Manual
+# Label manual kecil di bawah input
 c1.caption("Target ($)")
 c2.caption("Used ($)")
 c3.caption("Extra ($)")
 
 total_dana_usd = (budget - used) + extra
 
-st.markdown("<div class='section'>INVENTORY CHECK (ON = EMPTY)</div>", unsafe_allow_html=True)
+st.markdown("<div class='section'>INVENTORY (ON = EMPTY)</div>", unsafe_allow_html=True)
 i1, i2, i3 = st.columns(3)
 no_pltr = i1.toggle("PLTR", False)
 no_qqq  = i1.toggle("QQQ", False)
@@ -197,12 +182,15 @@ no_gld  = i2.toggle("GLD", False)
 no_mstr = i3.toggle("MSTR", False)
 
 inv_data = {
-    'PLTR': not no_pltr, 'BTC': not no_btc, 'MSTR': not no_mstr,
-    'QQQ': not no_qqq, 'GLD': not no_gld
+    'PLTR': not no_pltr,
+    'BTC': not no_btc,
+    'MSTR': not no_mstr,
+    'QQQ': not no_qqq,
+    'GLD': not no_gld
 }
 
 # =====================================================
-# 6. ENGINE
+# SIGNAL ENGINE
 # =====================================================
 def get_signal(series, symbol):
     price = series.iloc[-1]
@@ -224,19 +212,22 @@ def get_signal(series, symbol):
     return price, reason, action
 
 # =====================================================
-# 7. EXECUTION
+# EXECUTION
 # =====================================================
 st.write("")
 if st.button("RUN DIAGNOSTIC", use_container_width=True):
 
     tickers = {
-        'PLTR':'PLTR', 'BTC-USD':'BTC', 'MSTR':'MSTR',
-        'QQQ':'QQQ', 'GLD':'GLD'
+        'PLTR':'PLTR',
+        'BTC-USD':'BTC',
+        'MSTR':'MSTR',
+        'QQQ':'QQQ',
+        'GLD':'GLD'
     }
 
     sell, buy = [], []
 
-    with st.spinner("Analyzing Market Data..."):
+    with st.spinner("Processing..."):
         for sym, key in tickers.items():
             try:
                 df = yf.download(sym, period="300d", interval="1d", progress=False)
@@ -253,11 +244,11 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
             except:
                 pass
 
-    # --- OUTPUT DISPLAY ---
-    st.write("")
-    
+    # ================================
+    # OUTPUT — MOBILE EXECUTION LIST
+    # ================================
     if sell:
-        st.markdown("<div class='section' style='color:#ff6b6b'>LIQUIDATION REQUIRED</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section' style='color:#ff6b6b'>LIQUIDATION ORDER</div>", unsafe_allow_html=True)
         for x in sell:
             st.markdown(f"""
             <div class="exec sell">
@@ -284,9 +275,11 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
             if total_dana_usd>1 and total_w>0:
                 usd = total_dana_usd * active[sym]/total_w
                 if sym in ['BTC','GLD']:
-                    val, cur = f"Rp {usd*kurs_rupiah:,.0f}", "IDR"
+                    val = f"Rp {usd*kurs_rupiah:,.0f}"
+                    cur = "IDR"
                 else:
-                    val, cur = f"${usd:,.2f}", "USD"
+                    val = f"${usd:,.2f}"
+                    cur = "USD"
             else:
                 val,cur="HOLD","-"
 
