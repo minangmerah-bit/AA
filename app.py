@@ -49,13 +49,24 @@ div[data-baseweb="input"] {
     border: 1px solid #333 !important;
     border-radius: 8px !important;
     color: white !important;
-    padding: 4px 0;
+    padding: 8px 0; /* Padding agak besar biar enak disentuh */
 }
 input {
     color: white !important;
     font-weight: 700 !important;
     text-align: center !important; 
-    font-size: 16px !important;
+    font-size: 18px !important; /* Angka diperbesar dikit */
+}
+
+/* LABEL STYLE (Tulisan di atas kotak) */
+.input-label {
+    font-size: 11px;
+    color: #888;
+    font-weight: 600;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
 }
 
 /* HEADER STYLE */
@@ -67,17 +78,18 @@ input {
 .subtitle {
     font-size: 11px;
     color: #8e8e8e;
-    font-family: monospace; /* Monospace agar terlihat seperti coding signature */
+    font-family: monospace; /* Monospace agar terlihat coding style */
 }
 
 /* SECTION LABELS */
 .section {
-    margin-top: 1.5rem;
+    margin-top: 2rem;
     font-size: 10px;
     letter-spacing: 0.14em;
     color: #8e8e8e;
     text-transform: uppercase;
     font-weight: 700;
+    margin-bottom: 10px;
 }
 
 /* EXECUTION CARDS */
@@ -112,9 +124,9 @@ input {
     color: black;
     font-weight: 700;
     border-radius: 10px;
-    padding: 0.7rem;
+    padding: 0.8rem;
     border: none;
-    margin-top: 10px;
+    margin-top: 20px;
 }
 .stButton > button:hover {
     background: #e0e0e0;
@@ -135,12 +147,12 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# HEADER (UPDATED IDENTITY)
+# HEADER (IDENTITY FIXED)
 # =====================================================
 l, r = st.columns([3,1])
 with l:
     st.markdown("<div class='title'>EXECUTOR X1</div>", unsafe_allow_html=True)
-    # GANTI NAMA DI SINI (Lowercase, Joined)
+    # NAMA DIGANTI SESUAI REQUEST
     st.markdown("<div class='subtitle'>rizqynandaputra</div>", unsafe_allow_html=True)
 with r:
     st.markdown(
@@ -149,18 +161,23 @@ with r:
     )
 
 # =====================================================
-# INPUT (VISUAL FIXED: NO BUTTONS)
+# INPUT (LAYOUT FIXED: LABEL ATAS, KOTAK BAWAH)
 # =====================================================
 st.markdown("<div class='section'>CAPITAL CONFIG</div>", unsafe_allow_html=True)
-c1, c2, c3 = st.columns(3)
-# step=0.0 memastikan input dikenali sebagai float, CSS menyembunyikan tombolnya
-budget = c1.number_input("Target", 300.0, step=0.0, label_visibility="collapsed")
-used   = c2.number_input("Used", 0.0, step=0.0, label_visibility="collapsed")
-extra  = c3.number_input("Extra", 0.0, step=0.0, label_visibility="collapsed")
 
-c1.caption("Target ($)")
-c2.caption("Used ($)")
-c3.caption("Extra ($)")
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    st.markdown("<div class='input-label'>TARGET ($)</div>", unsafe_allow_html=True)
+    budget = st.number_input("Target", 300.0, step=0.0, label_visibility="collapsed")
+
+with c2:
+    st.markdown("<div class='input-label'>USED ($)</div>", unsafe_allow_html=True)
+    used = st.number_input("Used", 0.0, step=0.0, label_visibility="collapsed")
+
+with c3:
+    st.markdown("<div class='input-label'>EXTRA ($)</div>", unsafe_allow_html=True)
+    extra = st.number_input("Extra", 0.0, step=0.0, label_visibility="collapsed")
 
 total_dana_usd = (budget - used) + extra
 
