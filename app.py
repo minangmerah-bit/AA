@@ -2,58 +2,77 @@ import streamlit as st
 import yfinance as yf
 
 # =====================================================
-# SYSTEM CONFIG
+# 1. SYSTEM CONFIG
 # =====================================================
 st.set_page_config(
     page_title="Executor X1",
-    layout="centered"
+    page_icon="💠",
+    layout="centered",
+    initial_sidebar_state="collapsed" # Menyembunyikan sidebar
 )
 
 # =====================================================
-# MOBILE-FIRST UI STYLE
+# 2. UI STYLE & HACK (HIDE MENU & FORCE BLACK)
 # =====================================================
 st.markdown("""
 <style>
-#MainMenu, footer, header {visibility: hidden;}
+/* --- HIDE STREAMLIT UI ELEMENTS (BERSIH TOTAL) --- */
+#MainMenu {visibility: hidden;}
+header {visibility: hidden;}
+footer {visibility: hidden;}
+[data-testid="stToolbar"] {visibility: hidden !important;} /* Sembunyikan Manage App */
+.stDeployButton {display:none;} /* Sembunyikan tombol Deploy jika ada */
 
+/* --- FORCE BLACK BACKGROUND (MOBILE) --- */
+.stApp {
+    background-color: #000000 !important;
+}
+
+/* --- LAYOUT ADJUSTMENT --- */
 .block-container {
     max-width: 680px;
-    padding-top: 1.6rem;
+    padding-top: 2rem; /* Jarak atas disesuaikan krn header hilang */
     padding-bottom: 2rem;
 }
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    color: white;
 }
 
-/* Header */
+/* --- CUSTOM TYPOGRAPHY --- */
 .title {
     font-size: 24px;
     font-weight: 700;
+    color: white;
+    letter-spacing: -0.5px;
 }
 .subtitle {
     font-size: 11px;
     color: #8e8e8e;
+    margin-bottom: 20px;
 }
 
-/* Section */
+/* --- SECTION LABELS --- */
 .section {
-    margin-top: 1.2rem;
+    margin-top: 1.5rem;
     font-size: 10px;
     letter-spacing: 0.14em;
     color: #8e8e8e;
+    text-transform: uppercase;
+    font-weight: 600;
 }
 
-/* Execution item */
+/* --- EXECUTION CARDS --- */
 .exec {
-    border-radius: 10px;
-    padding: 10px 12px;
-    margin-bottom: 6px;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border: 1px solid #222;
 }
 
-.buy { background: #102418; }
-.sell { background: #2a1416; }
-.wait { background: #161618; }
+.buy { background: #102418; border-color: #143320; }
+.sell { background: #2a1416; border-color: #3d1a1d; }
 
 .exec-top {
     display: flex;
@@ -62,52 +81,74 @@ body {
 }
 
 .asset {
-    font-weight: 600;
-    font-size: 14px;
+    font-weight: 700;
+    font-size: 15px;
+    color: white;
 }
 
 .price {
     font-size: 11px;
-    color: #9a9a9a;
+    color: #999;
     margin-top: 2px;
 }
 
 .action-sell {
-    font-weight: 700;
+    font-weight: 800;
     color: #ff6b6b;
     font-size: 13px;
+    letter-spacing: 0.5px;
 }
 
 .value {
     font-weight: 700;
     font-size: 15px;
+    color: white;
 }
 
 .currency {
     font-size: 10px;
-    color: #9a9a9a;
+    color: #888;
     text-align: right;
 }
 
 .reason {
     font-size: 11px;
-    color: #9a9a9a;
-    margin-top: 2px;
+    color: #888;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.05);
 }
 
-/* Button */
+/* --- INPUT FIELDS --- */
+div[data-baseweb="input"] {
+    background-color: #111 !important;
+    border: 1px solid #333 !important;
+    border-radius: 8px !important;
+    color: white !important;
+}
+input { color: white !important; }
+
+/* --- BUTTON --- */
 .stButton > button {
     background: white;
     color: black;
-    font-weight: 600;
+    font-weight: 700;
     border-radius: 10px;
-    padding: 0.6rem;
+    padding: 0.75rem;
+    border: none;
+    width: 100%;
+    margin-top: 10px;
+    transition: 0.2s;
+}
+.stButton > button:hover {
+    background: #e0e0e0;
+    transform: scale(0.99);
 }
 </style>
 """, unsafe_allow_html=True)
 
 # =====================================================
-# FX LOGIC (UNCHANGED)
+# 3. FX LOGIC (PETER PROTOCOL)
 # =====================================================
 @st.cache_data(ttl=3600)
 def get_usd_idr():
@@ -119,45 +160,49 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# HEADER
+# 4. HEADER UI
 # =====================================================
-l, r = st.columns([3,1])
-with l:
+c1, c2 = st.columns([3,1])
+with c1:
     st.markdown("<div class='title'>EXECUTOR X1</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>Architect: Peter</div>", unsafe_allow_html=True)
-with r:
+with c2:
     st.markdown(
-        f"<div style='text-align:right;font-size:11px;color:#8e8e8e;padding-top:10px'>IDR {kurs_rupiah:,.0f}</div>",
+        f"<div style='text-align:right;font-size:11px;color:#8e8e8e;padding-top:8px'>IDR {kurs_rupiah:,.0f}</div>",
         unsafe_allow_html=True
     )
 
 # =====================================================
-# INPUT
+# 5. INPUTS
 # =====================================================
-st.markdown("<div class='section'>CAPITAL</div>", unsafe_allow_html=True)
-budget = st.number_input("Target", 300.0, step=10.0)
-used   = st.number_input("Used", 0.0, step=10.0)
-extra  = st.number_input("Extra", 0.0, step=10.0)
+st.markdown("<div class='section'>CAPITAL CONFIGURATION</div>", unsafe_allow_html=True)
+c1, c2, c3 = st.columns(3)
+budget = c1.number_input("Target", 300.0, step=10.0, label_visibility="collapsed")
+used   = c2.number_input("Used", 0.0, step=10.0, label_visibility="collapsed")
+extra  = c3.number_input("Extra", 0.0, step=10.0, label_visibility="collapsed")
+
+# Label Manual
+c1.caption("Target ($)")
+c2.caption("Used ($)")
+c3.caption("Extra ($)")
 
 total_dana_usd = (budget - used) + extra
 
-st.markdown("<div class='section'>INVENTORY (ON = EMPTY)</div>", unsafe_allow_html=True)
-no_pltr = st.toggle("PLTR", False)
-no_qqq  = st.toggle("QQQ", False)
-no_btc  = st.toggle("BTC", False)
-no_gld  = st.toggle("GLD", False)
-no_mstr = st.toggle("MSTR", False)
+st.markdown("<div class='section'>INVENTORY CHECK (ON = EMPTY)</div>", unsafe_allow_html=True)
+i1, i2, i3 = st.columns(3)
+no_pltr = i1.toggle("PLTR", False)
+no_qqq  = i1.toggle("QQQ", False)
+no_btc  = i2.toggle("BTC", False)
+no_gld  = i2.toggle("GLD", False)
+no_mstr = i3.toggle("MSTR", False)
 
 inv_data = {
-    'PLTR': not no_pltr,
-    'BTC': not no_btc,
-    'MSTR': not no_mstr,
-    'QQQ': not no_qqq,
-    'GLD': not no_gld
+    'PLTR': not no_pltr, 'BTC': not no_btc, 'MSTR': not no_mstr,
+    'QQQ': not no_qqq, 'GLD': not no_gld
 }
 
 # =====================================================
-# SIGNAL ENGINE (IDENTICAL)
+# 6. ENGINE
 # =====================================================
 def get_signal(series, symbol):
     price = series.iloc[-1]
@@ -179,51 +224,56 @@ def get_signal(series, symbol):
     return price, reason, action
 
 # =====================================================
-# EXECUTION
+# 7. EXECUTION
 # =====================================================
 st.write("")
 if st.button("RUN DIAGNOSTIC", use_container_width=True):
 
     tickers = {
-        'PLTR':'PLTR',
-        'BTC-USD':'BTC',
-        'MSTR':'MSTR',
-        'QQQ':'QQQ',
-        'GLD':'GLD'
+        'PLTR':'PLTR', 'BTC-USD':'BTC', 'MSTR':'MSTR',
+        'QQQ':'QQQ', 'GLD':'GLD'
     }
 
     sell, buy = [], []
 
-    for sym, key in tickers.items():
-        try:
-            df = yf.download(sym, period="300d", interval="1d", progress=False)
-            if df.empty: continue
+    with st.spinner("Analyzing Market Data..."):
+        for sym, key in tickers.items():
+            try:
+                df = yf.download(sym, period="300d", interval="1d", progress=False)
+                if df.empty: continue
 
-            px = df['Close'] if isinstance(df.columns,str) else df.xs('Close',axis=1,level=0).iloc[:,0]
-            price, reason, action = get_signal(px, key)
+                px = df['Close'] if isinstance(df.columns,str) else df.xs('Close',axis=1,level=0).iloc[:,0]
+                price, reason, action = get_signal(px, key)
 
-            item = {'sym': key, 'price': price, 'reason': reason}
-            if action=="SELL" and inv_data.get(key,True):
-                sell.append(item)
-            elif action=="BUY":
-                buy.append(item)
-        except:
-            pass
+                item = {'sym': key, 'price': price, 'reason': reason}
+                if action=="SELL" and inv_data.get(key,True):
+                    sell.append(item)
+                elif action=="BUY":
+                    buy.append(item)
+            except:
+                pass
 
+    # --- OUTPUT DISPLAY ---
+    st.write("")
+    
     if sell:
-        st.markdown("<div class='section'>SELL</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section' style='color:#ff6b6b'>LIQUIDATION REQUIRED</div>", unsafe_allow_html=True)
         for x in sell:
             st.markdown(f"""
             <div class="exec sell">
-                <div class="asset">{x['sym']}</div>
-                <div class="price">${x['price']:,.2f}</div>
-                <div class="action-sell">SELL</div>
+                <div class="exec-top">
+                    <div>
+                        <div class="asset">{x['sym']}</div>
+                        <div class="price">${x['price']:,.2f}</div>
+                    </div>
+                    <div class="action-sell">SELL</div>
+                </div>
                 <div class="reason">{x['reason']}</div>
             </div>
             """, unsafe_allow_html=True)
 
     if buy:
-        st.markdown("<div class='section'>BUY</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section' style='color:#4ade80'>ACQUISITION TARGETS</div>", unsafe_allow_html=True)
 
         base_w = {'BTC':0.2,'MSTR':0.2,'PLTR':0.35,'QQQ':0.15,'GLD':0.1}
         active = {x['sym']:base_w.get(x['sym'],0) for x in buy}
@@ -234,11 +284,9 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
             if total_dana_usd>1 and total_w>0:
                 usd = total_dana_usd * active[sym]/total_w
                 if sym in ['BTC','GLD']:
-                    val = f"Rp {usd*kurs_rupiah:,.0f}"
-                    cur = "IDR"
+                    val, cur = f"Rp {usd*kurs_rupiah:,.0f}", "IDR"
                 else:
-                    val = f"${usd:,.2f}"
-                    cur = "USD"
+                    val, cur = f"${usd:,.2f}", "USD"
             else:
                 val,cur="HOLD","-"
 
@@ -259,4 +307,4 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
             """, unsafe_allow_html=True)
 
     if not sell and not buy:
-        st.info("No action required.")
+        st.info("System Stable. No Action Required.")
