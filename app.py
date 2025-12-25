@@ -20,7 +20,7 @@ st.markdown("""
 .stApp { background-color: #000000 !important; }
 
 /* --- ELIMINATE "PRESS ENTER" NOISE --- */
-[data-testid="InputInstructions"] { display: none !important; } /* <--- PERINTAH ELIMINASI */
+[data-testid="InputInstructions"] { display: none !important; }
 
 /* --- CONTAINER --- */
 .block-container {
@@ -46,8 +46,8 @@ div[data-baseweb="input"] {
 input {
     color: white !important;
     font-weight: 700 !important;
-    text-align: left !important; /* <--- UBAH KE RATA KIRI */
-    padding-left: 15px !important; /* <--- JARAK DARI KIRI */
+    text-align: left !important;
+    padding-left: 15px !important;
     font-size: 18px !important;
 }
 
@@ -126,12 +126,13 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# 4. HEADER UI
+# 4. HEADER UI (ARCHITECT BRANDING APPLIED)
 # =====================================================
 l, r = st.columns([3,1])
 with l:
     st.markdown("<div class='title'>SYNTAX KERNEL</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>rizqynandaputra</div>", unsafe_allow_html=True)
+    # UPDATED: COOL ARCHITECT TITLE
+    st.markdown("<div class='subtitle'>9AM SYSTEM ARCHITECT</div>", unsafe_allow_html=True)
 with r:
     st.markdown(f"<div style='text-align:right;font-size:11px;color:#555;padding-top:10px;font-family:monospace'>IDR {kurs_rupiah:,.0f}</div>", unsafe_allow_html=True)
 
