@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# 2. UI STYLE (CLEAN, MATTE BLACK, NO BLOAT)
+# 2. UI STYLE (CLEAN, MATTE BLACK, LEFT ALIGNED LABELS)
 # =====================================================
 st.markdown("""
 <style>
@@ -37,36 +37,37 @@ body {
     color: white;
 }
 
-/* --- INPUT FIELD STYLING (THE CLEAN FIX) --- */
-/* Menyembunyikan tombol +/- (Stepper) agar input bersih total */
+/* --- INPUT FIELD STYLING --- */
+/* 1. Menyembunyikan tombol +/- (Stepper) */
 div[data-testid="stNumberInputStepDown"], div[data-testid="stNumberInputStepUp"] {
     display: none !important;
 }
 
-/* Styling Kotak Input agar menyatu matte hitam */
+/* 2. Styling Kotak Input */
 div[data-baseweb="input"] {
     background-color: #111 !important;
     border: 1px solid #333 !important;
     border-radius: 8px !important;
     color: white !important;
-    padding: 8px 0; /* Padding agak besar biar enak disentuh */
+    padding: 8px 0;
 }
 input {
     color: white !important;
     font-weight: 700 !important;
-    text-align: center !important; 
-    font-size: 18px !important; /* Angka diperbesar dikit */
+    text-align: center !important; /* Angka tetap di tengah biar fokus */
+    font-size: 18px !important;
 }
 
-/* LABEL STYLE (Tulisan di atas kotak) */
+/* 3. LABEL STYLE (PERBAIKAN: RATA KIRI) */
 .input-label {
     font-size: 11px;
     color: #888;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    text-align: center;
+    text-align: left !important; /* DIPAKSA KIRI */
+    padding-left: 2px; /* Sedikit padding biar lurus dengan border kotak */
 }
 
 /* HEADER STYLE */
@@ -78,7 +79,7 @@ input {
 .subtitle {
     font-size: 11px;
     color: #8e8e8e;
-    font-family: monospace; /* Monospace agar terlihat coding style */
+    font-family: monospace;
 }
 
 /* SECTION LABELS */
@@ -89,7 +90,7 @@ input {
     color: #8e8e8e;
     text-transform: uppercase;
     font-weight: 700;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 /* EXECUTION CARDS */
@@ -135,7 +136,7 @@ input {
 """, unsafe_allow_html=True)
 
 # =====================================================
-# FX LOGIC (LOCKED & AUDITED - PETER PROTOCOL)
+# FX LOGIC (LOCKED & AUDITED)
 # =====================================================
 @st.cache_data(ttl=3600)
 def get_usd_idr():
@@ -147,12 +148,11 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# HEADER (IDENTITY FIXED)
+# HEADER
 # =====================================================
 l, r = st.columns([3,1])
 with l:
     st.markdown("<div class='title'>EXECUTOR X1</div>", unsafe_allow_html=True)
-    # NAMA DIGANTI SESUAI REQUEST
     st.markdown("<div class='subtitle'>rizqynandaputra</div>", unsafe_allow_html=True)
 with r:
     st.markdown(
@@ -161,13 +161,14 @@ with r:
     )
 
 # =====================================================
-# INPUT (LAYOUT FIXED: LABEL ATAS, KOTAK BAWAH)
+# INPUT (LABEL RATA KIRI)
 # =====================================================
 st.markdown("<div class='section'>CAPITAL CONFIG</div>", unsafe_allow_html=True)
 
 c1, c2, c3 = st.columns(3)
 
 with c1:
+    # Class 'input-label' sekarang sudah diset text-align: left di CSS
     st.markdown("<div class='input-label'>TARGET ($)</div>", unsafe_allow_html=True)
     budget = st.number_input("Target", 300.0, step=0.0, label_visibility="collapsed")
 
