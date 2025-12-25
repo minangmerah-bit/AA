@@ -4,14 +4,13 @@ import yfinance as yf
 # =====================================================
 # 1. SYSTEM CONFIGURATION
 # =====================================================
-# NAMA TAB BROWSER DIUBAH DISINI
 st.set_page_config(
     page_title="SYNTAX KERNEL", 
     layout="centered"
 )
 
 # =====================================================
-# 2. UI ARCHITECTURE (PREMIUM & LOGICALLY CORRECT)
+# 2. UI ARCHITECTURE (CLEAN & SILENT)
 # =====================================================
 st.markdown("""
 <style>
@@ -19,6 +18,9 @@ st.markdown("""
 #MainMenu, footer, header {visibility: hidden;}
 [data-testid="stToolbar"] {visibility: hidden !important;}
 .stApp { background-color: #000000 !important; }
+
+/* --- ELIMINATE "PRESS ENTER" NOISE --- */
+[data-testid="InputInstructions"] { display: none !important; } /* <--- PERINTAH ELIMINASI */
 
 /* --- CONTAINER --- */
 .block-container {
@@ -39,12 +41,16 @@ div[data-baseweb="input"] {
     border-radius: 8px !important;
     padding: 8px 0;
 }
+
+/* UPDATED: ALIGN LEFT & CLEANER LOOK */
 input {
     color: white !important;
     font-weight: 700 !important;
-    text-align: center !important;
+    text-align: left !important; /* <--- UBAH KE RATA KIRI */
+    padding-left: 15px !important; /* <--- JARAK DARI KIRI */
     font-size: 18px !important;
 }
+
 .input-label {
     font-size: 11px; color: #888; font-weight: 600;
     margin-bottom: 6px; text-transform: uppercase;
@@ -76,9 +82,9 @@ input {
 }
 
 /* Border Indicators */
-.buy { border-left: 4px solid #2ecc71; }    /* Hijau */
-.sell { border-left: 4px solid #e74c3c; }   /* Merah */
-.hold { border-left: 4px solid #555555; }   /* Abu-abu (New Logic) */
+.buy { border-left: 4px solid #2ecc71; }    
+.sell { border-left: 4px solid #e74c3c; }   
+.hold { border-left: 4px solid #555555; }   
 
 /* Left Side: Asset Info */
 .asset-name { font-weight: 800; font-size: 17px; color: white; margin-bottom: 2px; }
@@ -95,7 +101,7 @@ input {
 }
 .tag-text-buy { color: #2ecc71; }
 .tag-text-sell { color: #e74c3c; }
-.tag-text-hold { color: #777; } /* Warna Netral untuk Hold */
+.tag-text-hold { color: #777; } 
 
 .val-main { font-weight: 800; font-size: 16px; color: white; }
 .val-sub { font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px; margin-top: 2px;}
@@ -120,12 +126,11 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# 4. HEADER UI - JUDUL UTAMA DIUBAH DISINI
+# 4. HEADER UI
 # =====================================================
 l, r = st.columns([3,1])
 with l:
-    # UPDATED HEADER TEXT
-    st.markdown("<div class='title'>SYNTAX KERNEL</div>", unsafe_allow_html=True) 
+    st.markdown("<div class='title'>SYNTAX KERNEL</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>rizqynandaputra</div>", unsafe_allow_html=True)
 with r:
     st.markdown(f"<div style='text-align:right;font-size:11px;color:#555;padding-top:10px;font-family:monospace'>IDR {kurs_rupiah:,.0f}</div>", unsafe_allow_html=True)
@@ -158,15 +163,11 @@ inv_data = {'PLTR': not no_pltr, 'BTC': not no_btc, 'MSTR': not no_mstr, 'QQQ': 
 # 6. ALGORITHM ENGINE (CORE)
 # =====================================================
 def get_signal(series, symbol):
-    # 1. DATA EXTRACTION
     price = series.iloc[-1]
     sma200 = series.rolling(200).mean().iloc[-1]
-    
-    # 2. DRAWDOWN LOGIC (CRASH PROTECTION)
     rolling_max = series.rolling(200, min_periods=1).max()
     cur_dd = (series - rolling_max).iloc[-1] / rolling_max.iloc[-1]
     
-    # 3. RSI LOGIC (MOMENTUM 14)
     delta = series.diff()
     gain = (delta.where(delta > 0, 0)).rolling(14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
@@ -176,7 +177,6 @@ def get_signal(series, symbol):
 
     action, reason = "WAIT", "Stable"
 
-    # 4. DECISION HIERARCHY
     if cur_rsi > 80 or (price - sma200)/sma200 > 0.6: 
         action, reason = "SELL", f"Overheat RSI {cur_rsi:.0f}"
     elif price > sma200: 
@@ -208,7 +208,6 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
                 elif action=="BUY": buy.append(item)
             except: pass
 
-    # --- RENDER SELL CARDS ---
     if sell:
         st.markdown("<div class='section' style='color:#e74c3c'>LIQUIDATION ORDER</div>", unsafe_allow_html=True)
         for x in sell:
@@ -226,12 +225,8 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
             </div>
             """, unsafe_allow_html=True)
 
-    # --- RENDER BUY CARDS (LOGIC CHECK: FUNDING) ---
     if buy:
-        # LOGIC CHECK: Apakah ada uang?
         has_funds = total_dana_usd > 1
-        
-        # Tentukan Warna Header Section
         header_color = "#2ecc71" if has_funds else "#777"
         header_text = "ACQUISITION TARGETS" if has_funds else "WATCHLIST (NO FUNDS)"
         
@@ -243,25 +238,15 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
         
         for x in buy:
             sym = x['sym']
-            
-            # --- LOGIC BRANCHING ---
             if has_funds and total_w > 0:
-                # SCENARIO A: MARKET BUY + ADA UANG -> TAMPILKAN BUY (HIJAU)
                 usd = total_dana_usd * active[sym]/total_w
                 if sym in ['BTC','GLD']: val, cur = f"Rp {usd*kurs_rupiah:,.0f}", "IDR"
                 else: val, cur = f"${usd:,.2f}", "USD"
-                
-                card_class = "buy"
-                tag_class = "tag-text-buy"
-                tag_label = "BUY"
+                card_class, tag_class, tag_label = "buy", "tag-text-buy", "BUY"
             else:
-                # SCENARIO B: MARKET BUY + TIDAK ADA UANG -> TAMPILKAN HOLD (ABU)
                 val, cur = "0.00", "-"
-                card_class = "hold" # Class baru (Abu-abu)
-                tag_class = "tag-text-hold"
-                tag_label = "HOLD" # Sesuai request: Jangan tulisan BUY kalau uang 0
+                card_class, tag_class, tag_label = "hold", "tag-text-hold", "HOLD"
             
-            # RENDER CARD
             st.markdown(f"""
             <div class="exec {card_class}">
                 <div>
