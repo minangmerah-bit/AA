@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 # =====================================================
-# 2. UI ARCHITECTURE (CLEAN & SILENT)
+# 2. UI ARCHITECTURE (GAP FIXED & REFINED KURS)
 # =====================================================
 st.markdown("""
 <style>
@@ -26,7 +26,7 @@ st.markdown("""
 .block-container {
     max-width: 680px;
     padding-top: 2rem;
-    padding-bottom: 4rem;
+    padding-bottom: 2rem; /* Reduced padding bottom */
 }
 
 /* --- TYPOGRAPHY --- */
@@ -42,7 +42,6 @@ div[data-baseweb="input"] {
     padding: 8px 0;
 }
 
-/* UPDATED: ALIGN LEFT & CLEANER LOOK */
 input {
     color: white !important;
     font-weight: 700 !important;
@@ -60,21 +59,30 @@ input {
 /* --- HEADER STYLING --- */
 .title { font-size: 24px; font-weight: 700; color: white; letter-spacing: -0.5px; }
 
-/* [UPDATED] SUBTITLE: ITALIC, MONOSPACE, & ELEGANT */
 .subtitle {
     font-size: 10px; 
-    color: #666; /* Abu-abu redup */
-    font-family: "SF Mono", "Consolas", "Courier New", monospace; /* Font Coding */
-    font-style: italic; /* Miring seperti tanda tangan */
-    letter-spacing: 1px; /* Sedikit renggang */
+    color: #666; 
+    font-family: "SF Mono", "Consolas", "Courier New", monospace; 
+    font-style: italic; 
+    letter-spacing: 1px; 
     margin-top: 2px;
     opacity: 0.8;
 }
 
+/* [FIXED] SECTION MARGIN REDUCED TO CLOSE GAP */
 .section {
-    margin-top: 2.5rem; font-size: 10px; letter-spacing: 1.5px;
-    color: #555; text-transform: uppercase; font-weight: 700; margin-bottom: 15px;
+    margin-top: 1rem; /* SEBELUMNYA 2.5rem (TERLALU JAUH) */
+    font-size: 10px; 
+    letter-spacing: 1.5px;
+    color: #555; 
+    text-transform: uppercase; 
+    font-weight: 700; 
+    margin-bottom: 10px;
 }
+
+/* --- KURS INDICATOR STYLING --- */
+.kurs-label { color: #555; font-weight: 600; font-size: 11px; letter-spacing: 0.5px; }
+.kurs-value { color: #4caf50; font-weight: 700; font-size: 12px; font-family: monospace; }
 
 /* --- INTELLIGENT CARDS --- */
 .exec {
@@ -88,20 +96,16 @@ input {
     align-items: center;
 }
 
-/* Border Indicators */
 .buy { border-left: 4px solid #2ecc71; }    
 .sell { border-left: 4px solid #e74c3c; }   
 .hold { border-left: 4px solid #555555; }   
 
-/* Left Side: Asset Info */
 .asset-name { font-weight: 800; font-size: 17px; color: white; margin-bottom: 2px; }
 .market-price { font-size: 13px; color: #eee; font-weight: 600; font-family: monospace; }
 .asset-reason { font-size: 10px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
 
-/* Right Side: Action & Value */
 .val-box { text-align: right; }
 
-/* PREMIUM MICRO-LABELS */
 .action-tag {
     font-size: 10px; font-weight: 800; letter-spacing: 1.2px;
     text-transform: uppercase; margin-bottom: 2px; display: block;
@@ -133,17 +137,26 @@ def get_usd_idr():
 kurs_rupiah = get_usd_idr()
 
 # =====================================================
-# 4. HEADER UI (FINAL LOOK)
+# 4. HEADER UI (REFINED KURS & LAYOUT)
 # =====================================================
-l, r = st.columns([3,1])
+l, r = st.columns([2.5, 1.5]) # Adjusted Ratio for better fit
 with l:
     st.markdown("<div class='title'>9AM SYSTEM</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>ARCHITECT BY rizqynandaputra</div>", unsafe_allow_html=True)
 with r:
-    st.markdown(f"<div style='text-align:right;font-size:11px;color:#555;padding-top:10px;font-family:monospace'>IDR {kurs_rupiah:,.0f}</div>", unsafe_allow_html=True)
+    # UPDATED: KURS DISPLAY (RAPI & JELAS)
+    st.markdown(
+        f"""
+        <div style='text-align:right; padding-top:12px;'>
+            <span class='kurs-label'>KURS : </span>
+            <span class='kurs-value'>{kurs_rupiah:,.0f}</span>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
 
 # =====================================================
-# 5. INPUT CONFIGURATION
+# 5. INPUT CONFIGURATION (GAP FIXED VIA CSS)
 # =====================================================
 st.markdown("<div class='section'>CAPITAL CONFIGURATION</div>", unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
