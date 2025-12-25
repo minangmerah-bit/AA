@@ -6,12 +6,12 @@ import yfinance as yf
 # =====================================================
 st.set_page_config(
     page_title="Executor X1",
-    layout="centered",
-    page_icon="⚫"  # THE VOID
+    layout="centered"
+    # Page Icon dihapus sesuai permintaan (Default Streamlit)
 )
 
 # =====================================================
-# 2. UI STYLE (CLEAN & PROFESSIONAL)
+# 2. UI STYLE (CLEAN, MATTE BLACK, NO BLOAT)
 # =====================================================
 st.markdown("""
 <style>
@@ -37,8 +37,8 @@ body {
     color: white;
 }
 
-/* --- INPUT FIELD STYLING (THE FIX) --- */
-/* Menyembunyikan tombol +/- (Stepper) agar input bersih */
+/* --- INPUT FIELD STYLING (THE CLEAN FIX) --- */
+/* Menyembunyikan tombol +/- (Stepper) agar input bersih total */
 div[data-testid="stNumberInputStepDown"], div[data-testid="stNumberInputStepUp"] {
     display: none !important;
 }
@@ -122,7 +122,7 @@ input {
 """, unsafe_allow_html=True)
 
 # =====================================================
-# FX LOGIC (LOCKED & AUDITED)
+# FX LOGIC (LOCKED & AUDITED - PETER PROTOCOL)
 # =====================================================
 @st.cache_data(ttl=3600)
 def get_usd_idr():
@@ -151,7 +151,7 @@ with r:
 # =====================================================
 st.markdown("<div class='section'>CAPITAL CONFIG</div>", unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
-# step=0.0 dan CSS di atas bekerja sama menghilangkan tombol +/-
+# step=0.0 memastikan input dikenali sebagai float, CSS menyembunyikan tombolnya
 budget = c1.number_input("Target", 300.0, step=0.0, label_visibility="collapsed")
 used   = c2.number_input("Used", 0.0, step=0.0, label_visibility="collapsed")
 extra  = c3.number_input("Extra", 0.0, step=0.0, label_visibility="collapsed")
@@ -176,21 +176,21 @@ inv_data = {
 }
 
 # =====================================================
-# SIGNAL ENGINE (PETER PROTOCOL - LOCKED)
+# SIGNAL ENGINE (CORE STRATEGY)
 # =====================================================
 def get_signal(series, symbol):
     price = series.iloc[-1]
     sma200 = series.rolling(200).mean().iloc[-1]
     # Drawdown Logic
     cur_dd = (series - series.rolling(200, min_periods=1).max()).iloc[-1] / series.rolling(200, min_periods=1).max().iloc[-1]
-    # RSI Logic
+    # RSI Logic (14 Period)
     rsi = 100 - (100 / (1 + (series.diff().where(lambda x:x>0,0).rolling(14).mean() /
                             (-series.diff().where(lambda x:x<0,0).rolling(14).mean()))))
     cur_rsi = rsi.iloc[-1]
 
     action, reason = "WAIT", "Stable"
 
-    # STRATEGY RULES
+    # STRATEGY RULES (HIERARCHY: SELL > TREND BUY > DIP BUY)
     if cur_rsi > 80 or (price - sma200)/sma200 > 0.6:
         action, reason = "SELL", f"Overheat RSI {cur_rsi:.0f}"
     elif price > sma200:
