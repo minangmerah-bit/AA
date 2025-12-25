@@ -12,50 +12,48 @@ st.set_page_config(
 )
 
 # =====================================================
-# 2. UI STYLE (ENTERPRISE GRADE - SEAMLESS INPUT)
+# 2. UI STYLE (FIXED: CLEAN & STABLE)
 # =====================================================
 st.markdown("""
 <style>
-/* --- HIDE DEFAULT MENUS --- */
+/* HIDE DEFAULT ELEMENTS */
 #MainMenu, header, footer {visibility: hidden;}
 [data-testid="stToolbar"] {visibility: hidden !important;}
 
-/* --- FORCE PITCH BLACK BACKGROUND --- */
+/* FORCE BLACK BACKGROUND */
 .stApp {
     background-color: #000000 !important;
 }
 
-/* --- LAYOUT ADJUSTMENT --- */
+/* LAYOUT */
 .block-container {
-    max-width: 600px; /* Lebih ramping agar pas di HP */
+    max-width: 600px;
     padding-top: 2rem;
-    padding-bottom: 2rem;
+    padding-bottom: 3rem;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
     color: white;
 }
 
-/* --- HEADER TYPOGRAPHY --- */
+/* HEADER */
 .title {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 800;
     color: white;
-    letter-spacing: -0.5px;
     margin-bottom: 0px;
 }
 .subtitle {
     font-size: 11px;
     color: #666;
-    margin-top: 4px;
     font-family: monospace;
     letter-spacing: 1px;
 }
 
-/* --- SECTION LABELS --- */
+/* SECTION HEADERS */
 .section {
-    margin-top: 25px;
+    margin-top: 20px;
     margin-bottom: 8px;
     font-size: 10px;
     letter-spacing: 1.5px;
@@ -64,57 +62,45 @@ body {
     font-weight: 700;
 }
 
-/* --- INPUT FIELDS (THE FIX: SEAMLESS BOX) --- */
-/* Menghilangkan tombol +/- (Stepper) agar input jadi kotak utuh */
-button[kind="secondaryFormSubmit"] {display: none;}
-div[data-testid="stNumberInputStepDown"] {display: none !important;}
-div[data-testid="stNumberInputStepUp"] {display: none !important;}
-
-/* Styling Kotak Input */
+/* INPUT FIELDS (CLEAN BOX - NO BUTTONS) */
 div[data-baseweb="input"] {
-    background-color: #111 !important; /* Abu sangat gelap */
+    background-color: #111 !important;
     border: 1px solid #333 !important;
     border-radius: 8px !important;
     color: white !important;
-    padding: 5px; /* Padding biar angka tidak mepet */
+    padding: 2px;
 }
 input {
     color: white !important;
     font-weight: 600 !important;
-    font-size: 16px !important; /* Angka lebih besar/jelas */
-    text-align: center !important; /* Angka di tengah (Opsional, lebih rapi) */
+    font-size: 16px !important;
+    text-align: center !important;
 }
 
-/* --- EXECUTION CARDS --- */
+/* EXECUTION CARDS */
 .exec {
     border-radius: 12px;
     padding: 14px 16px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     border: 1px solid #222;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-
 .buy { background: #0a1f10; border-color: #143320; }
 .sell { background: #260d0f; border-color: #3d1a1d; }
 
-.asset-box {
-    display: flex;
-    flex-direction: column;
-}
+.asset-box { display: flex; flex-direction: column; }
 .asset-name { font-weight: 700; font-size: 16px; color: white; }
 .asset-price { font-size: 11px; color: #777; margin-top: 2px; }
 
-.result-box {
-    text-align: right;
-}
-.action-sell { font-weight: 800; color: #ff5252; font-size: 14px; letter-spacing: 0.5px; }
+.result-box { text-align: right; }
+.action-sell { font-weight: 800; color: #ff5252; font-size: 14px; }
 .value-buy { font-weight: 700; font-size: 16px; color: white; }
 .currency { font-size: 10px; color: #666; }
 .reason { font-size: 10px; color: #666; margin-top: 4px; text-transform: uppercase; }
 
-/* --- BUTTON --- */
+/* BUTTON */
 .stButton > button {
     width: 100%;
     background-color: white;
@@ -125,17 +111,15 @@ input {
     font-size: 14px;
     border: none;
     margin-top: 15px;
-    transition: 0.2s;
 }
 .stButton > button:hover {
     background-color: #cccccc;
-    transform: scale(0.99);
 }
 </style>
 """, unsafe_allow_html=True)
 
 # =====================================================
-# 3. FX LOGIC (PETER PROTOCOL - LOCKED)
+# 3. FX LOGIC (AUDITED & LOCKED)
 # =====================================================
 @st.cache_data(ttl=3600)
 def get_usd_idr():
@@ -160,24 +144,34 @@ with c_rate:
     )
 
 # =====================================================
-# 5. INPUTS (SEAMLESS SINGLE BOX)
+# 5. INPUTS (CLEAN TEXT INPUT - NO BUTTONS)
 # =====================================================
-st.markdown("<div class='section'>CAPITAL ALLOCATION</div>", unsafe_allow_html=True)
+st.markdown("<div class='section'>CAPITAL CONFIG</div>", unsafe_allow_html=True)
 
 c1, c2, c3 = st.columns(3)
-# Input tanpa tombol +/- (Berkat CSS di atas)
-budget = c1.number_input("T", 300.0, step=0.0, label_visibility="collapsed")
-used   = c2.number_input("U", 0.0, step=0.0, label_visibility="collapsed")
-extra  = c3.number_input("E", 0.0, step=0.0, label_visibility="collapsed")
 
-# Label minimalis di bawah
+# Kita gunakan text_input agar kotak polos sempurna (tanpa tombol +/-)
+# Lalu kita ubah jadi float di background agar bisa dihitung
+budget_str = c1.text_input("T", value="300", label_visibility="collapsed")
+used_str   = c2.text_input("U", value="0", label_visibility="collapsed")
+extra_str  = c3.text_input("E", value="0", label_visibility="collapsed")
+
+# Konversi Text ke Angka (Safety Check)
+try: budget = float(budget_str)
+except: budget = 0.0
+try: used = float(used_str)
+except: used = 0.0
+try: extra = float(extra_str)
+except: extra = 0.0
+
+# Label di bawah
 c1.caption("Target ($)")
 c2.caption("Used ($)")
 c3.caption("Extra ($)")
 
 total_dana_usd = (budget - used) + extra
 
-st.markdown("<div class='section'>INVENTORY STATUS (ON = EMPTY)</div>", unsafe_allow_html=True)
+st.markdown("<div class='section'>INVENTORY (ON = EMPTY)</div>", unsafe_allow_html=True)
 i1, i2, i3 = st.columns(3)
 no_pltr = i1.toggle("PLTR", False)
 no_qqq  = i1.toggle("QQQ", False)
@@ -196,16 +190,14 @@ inv_data = {
 def get_signal(series, symbol):
     price = series.iloc[-1]
     sma200 = series.rolling(200).mean().iloc[-1]
-    # Drawdown logic
     cur_dd = (series - series.rolling(200, min_periods=1).max()).iloc[-1] / series.rolling(200, min_periods=1).max().iloc[-1]
-    # RSI Logic
     rsi = 100 - (100 / (1 + (series.diff().where(lambda x:x>0,0).rolling(14).mean() /
                             (-series.diff().where(lambda x:x<0,0).rolling(14).mean()))))
     cur_rsi = rsi.iloc[-1]
 
     action, reason = "WAIT", "Stable"
 
-    # STRATEGY RULES
+    # STRATEGY RULES (PETER PROTOCOL)
     if cur_rsi > 80 or (price - sma200)/sma200 > 0.6:
         action, reason = "SELL", f"Overheat RSI {cur_rsi:.0f}"
     elif price > sma200:
@@ -228,7 +220,7 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
 
     sell, buy = [], []
 
-    with st.spinner("Analyzing..."):
+    with st.spinner("Processing..."):
         for sym, key in tickers.items():
             try:
                 df = yf.download(sym, period="300d", interval="1d", progress=False)
@@ -244,7 +236,7 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
                     buy.append(item)
             except: pass
 
-    # --- OUTPUT DISPLAY (CLEAN CARDS) ---
+    # --- OUTPUT DISPLAY ---
     st.write("")
     
     if sell:
@@ -296,4 +288,4 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
             """, unsafe_allow_html=True)
 
     if not sell and not buy:
-        st.info("Market is Neutral. No Action Required.")
+        st.info("System Stable. No Action Required.")
