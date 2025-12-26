@@ -1,5 +1,7 @@
 import streamlit as st
 import yfinance as yf
+import pandas as pd
+from datetime import datetime
 
 # =====================================================
 # 1. SYSTEM CONFIGURATION
@@ -63,19 +65,12 @@ input {
     align-items: flex-end; /* Rata bawah agar sejajar */
     width: 100%;
     margin-bottom: 15px; /* Jarak ke section bawah */
-    border-bottom: 1px solid #1a1a1a; /* Garis tipis pemisah (opsional, biar rapi) */
+    border-bottom: 1px solid #1a1a1a; /* Garis tipis pemisah */
     padding-bottom: 10px;
 }
 
-.header-left {
-    display: flex;
-    flex-direction: column;
-}
-
-.header-right {
-    text-align: right;
-    margin-bottom: 2px; /* Micro adjustment alignment */
-}
+.header-left { display: flex; flex-direction: column; }
+.header-right { text-align: right; margin-bottom: 2px; }
 
 .title { 
     font-size: 24px; 
@@ -101,7 +96,7 @@ input {
 
 /* --- SECTION TITLE --- */
 .section {
-    margin-top: 0.5rem; /* RAPATKAN GAP */
+    margin-top: 0.5rem; 
     font-size: 10px; 
     letter-spacing: 1.5px;
     color: #555; 
@@ -125,6 +120,7 @@ input {
 .buy { border-left: 4px solid #2ecc71; }    
 .sell { border-left: 4px solid #e74c3c; }   
 .hold { border-left: 4px solid #555555; }   
+.wait { border-left: 4px solid #f1c40f; }
 
 .asset-name { font-weight: 800; font-size: 17px; color: white; margin-bottom: 2px; }
 .market-price { font-size: 13px; color: #eee; font-weight: 600; font-family: monospace; }
@@ -139,6 +135,7 @@ input {
 .tag-text-buy { color: #2ecc71; }
 .tag-text-sell { color: #e74c3c; }
 .tag-text-hold { color: #777; } 
+.tag-text-wait { color: #f1c40f; }
 
 .val-main { font-weight: 800; font-size: 16px; color: white; }
 .val-sub { font-size: 10px; font-weight: 700; color: #555; letter-spacing: 0.5px; margin-top: 2px;}
@@ -153,18 +150,14 @@ input {
 
 /* --- MOBILE OPTIMIZATION --- */
 @media only screen and (max-width: 600px) {
-    .header-container {
-        align-items: flex-start; /* Pada HP, biar rapi */
-    }
-    .header-right {
-        margin-top: 5px; /* Sedikit jarak jika layar sangat sempit */
-    }
+    .header-container { align-items: flex-start; }
+    .header-right { margin-top: 5px; }
 }
 </style>
 """, unsafe_allow_html=True)
 
 # =====================================================
-# 3. FX LOGIC (PETER PROTOCOL - LOCKED)
+# 3. CORE LOGIC ENGINE (STRICT MODE - UPDATED)
 # =====================================================
 @st.cache_data(ttl=3600)
 def get_usd_idr():
@@ -172,10 +165,65 @@ def get_usd_idr():
     except: return 16000.0
 kurs_rupiah = get_usd_idr()
 
+# --- FUNGSI PEMBERSIH DATA (WAJIB ADA UNTUK KEAMANAN) ---
+def get_clean_series(symbol):
+    # 1. Fetch Data
+    df = yf.download(symbol, period="400d", interval="1d", progress=False)
+    if df.empty: return None, "EMPTY"
+
+    # 2. Fix Structure
+    if isinstance(df.columns, pd.MultiIndex):
+        try: df.columns = df.columns.get_level_values(0)
+        except: pass
+    if 'Close' not in df.columns: df['Close'] = df.iloc[:, 3]
+
+    # 3. Time Logic (Hapus Candle Hari Ini agar sama dengan Backtest)
+    today_server = pd.Timestamp.now().date()
+    df.index = pd.to_datetime(df.index).date
+    
+    last_date = df.index[-1]
+    if last_date == today_server:
+        df = df.iloc[:-1] # Buang data berjalan
+        
+    return df['Close'], "OK"
+
+# --- FUNGSI SINYAL (SAMA DENGAN BACKTEST) ---
+def get_signal(series, symbol):
+    price = series.iloc[-1]
+    sma200 = series.rolling(200).mean().iloc[-1]
+    
+    # Drawdown
+    rolling_max = series.rolling(200, min_periods=1).max()
+    cur_dd = (series - rolling_max).iloc[-1] / rolling_max.iloc[-1]
+    
+    # RSI
+    delta = series.diff()
+    gain = (delta.where(delta > 0, 0)).rolling(14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    cur_rsi = rsi.iloc[-1]
+
+    action = "WAIT"
+    reason = "Neutral"
+    
+    # LOGIC MATCHING
+    if cur_rsi > 80:
+        action = "SELL"; reason = f"RSI Overheat {cur_rsi:.0f}"
+    elif (price - sma200)/sma200 > 0.6:
+        action = "SELL"; reason = "Bubble (>60% vs SMA)"
+    elif price > sma200:
+        action = "BUY"; reason = "Uptrend Momentum"
+    elif (symbol=='PLTR' and cur_dd < -0.30):
+        action = "BUY"; reason = f"Deep Dip {cur_dd*100:.0f}%"
+    elif (symbol in ['BTC','MSTR'] and cur_dd < -0.20):
+        action = "BUY"; reason = f"Crypto Dip {cur_dd*100:.0f}%"
+    
+    return price, reason, action
+
 # =====================================================
-# 4. HEADER UI (SINGLE BLOCK HTML - NO COLUMNS)
+# 4. HEADER UI (SINGLE BLOCK HTML)
 # =====================================================
-# Menggunakan satu container HTML agar menyatu di Mobile
 st.markdown(f"""
 <div class="header-container">
     <div class="header-left">
@@ -190,20 +238,21 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # =====================================================
-# 5. INPUT CONFIGURATION
+# 5. INPUT CONFIGURATION (3 KOLOM)
 # =====================================================
 st.markdown("<div class='section'>CAPITAL CONFIGURATION</div>", unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
 with c1:
     st.markdown("<div class='input-label'>TARGET ($)</div>", unsafe_allow_html=True)
-    budget = st.number_input("Target", 300.0, step=1.0, label_visibility="collapsed")
+    budget = st.number_input("Target", 300.0, step=10.0, label_visibility="collapsed")
 with c2:
     st.markdown("<div class='input-label'>USED ($)</div>", unsafe_allow_html=True)
-    used = st.number_input("Used", 0.0, step=1.0, label_visibility="collapsed")
+    used = st.number_input("Used", 0.0, step=10.0, label_visibility="collapsed")
 with c3:
     st.markdown("<div class='input-label'>EXTRA ($)</div>", unsafe_allow_html=True)
-    extra = st.number_input("Extra", 0.0, step=1.0, label_visibility="collapsed")
+    extra = st.number_input("Extra", 0.0, step=10.0, label_visibility="collapsed")
 
+# Logika Hitung Dana: (Target - Terpakai) + Tambahan Manual
 total_dana_usd = (budget - used) + extra
 
 st.markdown("<div class='section'>INVENTORY STATUS (ON = EMPTY)</div>", unsafe_allow_html=True)
@@ -214,54 +263,33 @@ no_mstr = i3.toggle("MSTR", False)
 inv_data = {'PLTR': not no_pltr, 'BTC': not no_btc, 'MSTR': not no_mstr, 'QQQ': not no_qqq, 'GLD': not no_gld}
 
 # =====================================================
-# 6. ALGORITHM ENGINE (CORE)
-# =====================================================
-def get_signal(series, symbol):
-    price = series.iloc[-1]
-    sma200 = series.rolling(200).mean().iloc[-1]
-    rolling_max = series.rolling(200, min_periods=1).max()
-    cur_dd = (series - rolling_max).iloc[-1] / rolling_max.iloc[-1]
-    
-    delta = series.diff()
-    gain = (delta.where(delta > 0, 0)).rolling(14).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
-    rs = gain / loss
-    rsi = 100 - (100 / (1 + rs))
-    cur_rsi = rsi.iloc[-1]
-
-    action, reason = "WAIT", "Stable"
-
-    if cur_rsi > 80 or (price - sma200)/sma200 > 0.6: 
-        action, reason = "SELL", f"Overheat RSI {cur_rsi:.0f}"
-    elif price > sma200: 
-        action, reason = "BUY", "Uptrend"
-    elif (symbol=='PLTR' and cur_dd < -0.30) or (symbol in ['BTC','MSTR'] and cur_dd < -0.20): 
-        action, reason = "BUY", f"Dip {cur_dd*100:.0f}%"
-
-    return price, reason, action
-
-# =====================================================
-# 7. EXECUTION & RENDERING
+# 6. EXECUTION & RENDERING
 # =====================================================
 st.write("")
 if st.button("RUN DIAGNOSTIC", use_container_width=True):
     tickers = {'PLTR':'PLTR', 'BTC-USD':'BTC', 'MSTR':'MSTR', 'QQQ':'QQQ', 'GLD':'GLD'}
-    sell, buy = [], []
+    sell, buy, wait = [], [], []
     
     with st.spinner("Processing Market Data..."):
         for sym, key in tickers.items():
             try:
-                df = yf.download(sym, period="300d", interval="1d", progress=False)
-                if df.empty: continue
-                px = df['Close'] if isinstance(df.columns,str) else df.xs('Close',axis=1,level=0).iloc[:,0]
+                # --- STRICT DATA FETCHING ---
+                series_clean, status = get_clean_series(sym)
+                if status != "OK": 
+                    st.error(f"Error {key}: {status}")
+                    continue
                 
-                price, reason, action = get_signal(px, key)
-                item = {'sym': key, 'price': price, 'reason': reason}
+                # --- LOGIC ---
+                price, reason, action = get_signal(series_clean, key)
+                item = {'sym': key, 'price': price, 'reason': reason, 'action': action}
                 
-                if action=="SELL" and inv_data.get(key,True): sell.append(item)
-                elif action=="BUY": buy.append(item)
+                # --- SORTING ---
+                if action == "SELL" and inv_data.get(key, True): sell.append(item)
+                elif action == "BUY": buy.append(item)
+                else: wait.append(item)
             except: pass
 
+    # --- RENDER SELL ---
     if sell:
         st.markdown("<div class='section' style='color:#e74c3c'>LIQUIDATION ORDER</div>", unsafe_allow_html=True)
         for x in sell:
@@ -279,6 +307,7 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
             </div>
             """, unsafe_allow_html=True)
 
+    # --- RENDER BUY ---
     if buy:
         has_funds = total_dana_usd > 1
         header_color = "#2ecc71" if has_funds else "#777"
@@ -315,5 +344,23 @@ if st.button("RUN DIAGNOSTIC", use_container_width=True):
                 </div>
             </div>
             """, unsafe_allow_html=True)
+    
+    # --- RENDER WAIT ---
+    if wait and (sell or buy):
+         st.markdown("<div class='section'>WAITING LIST</div>", unsafe_allow_html=True)
+         for x in wait:
+            st.markdown(f"""
+            <div class="exec wait">
+                <div>
+                    <div class="asset-name">{x['sym']}</div>
+                    <div class="asset-reason">{x['reason']}</div>
+                </div>
+                <div class="val-box">
+                    <div class="action-tag tag-text-wait">WAIT</div>
+                    <div class="val-main">---</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
-    if not sell and not buy: st.info("System Stable. No Action Required.")
+    if not sell and not buy:
+        st.info("System Stable. No Action Required.")
